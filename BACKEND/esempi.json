@@ -1,0 +1,41 @@
+[
+    {
+        "EMAIL_UTENTE":"user1@gmail.com",
+        "NOME_UTENTE":"user",
+        "PASSWORD_UTENTE":"user",
+        "COORDINATE_UTENTE":"45.691779334143924 9.807092900511178",
+        "INDIRIZZO_UTENTE":"Via del Convento, 1, 24060 San Paolo d'Argon BG",
+        "CHECK_ADMIN":1,
+        "ADMIN_PASSWORD":"ADMIN_PASSWORD"
+    },
+    {
+        "EMAIL_UTENTE":"user2@gmail.com",
+        "NOME_UTENTE":"user",
+        "PASSWORD_UTENTE":"user",
+        "INDIRIZZO_UTENTE":"Via del Convento, 1, 24060 San Paolo d'Argon BG"    
+    },
+    {
+        "NOME_EVENTO": "Concerto Jazz al Parco",
+        "DESCRIZIONE_EVENTO": "Una serata di musica jazz dal vivo sotto le stelle.",
+        "DATA_EVENTO": "2025-06-15T21:00:00",
+        "COSTO": 15.00,
+        "CHECK_MAGGIORENNI": true,
+        "INDIRIZZO_EVENTO": "Parco Sempione, Milano, Italia",
+        "COORDINATE_EVENTO": "",
+        "CATEGORIA": "Concerto",
+        "PASSWORD_EVENTO": "segreto123",
+        "MAX_PARTECIPANTI": "10"
+    },
+    {
+        "NOME_EVENTO": "Meeting in luogo a caso",
+        "DESCRIZIONE_EVENTO": "Naruto run",
+        "DATA_EVENTO": "2025-12-02T10:00:00",
+        "COORDINATE_EVENTO": "45.5730427 9.1669714"
+    },
+    {
+        "NOME_CATEGORIA":"Ritrovo"
+    },
+    {
+        "PASSWORD_EVENTO":"segreto123"
+    }
+]

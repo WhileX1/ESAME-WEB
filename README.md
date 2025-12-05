@@ -13,8 +13,3 @@ ng serve
 git init
 [LINK_ORGINE]
 git remote add origin https://github.com/WhileX1/ESAME-WEB
-[PRMIO_UPLOAD]
-git add README.md
-git commit -m "Primo commit"
-[PRIMO_PUSH]
-git push -u origin master

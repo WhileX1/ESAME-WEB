@@ -1,0 +1,37 @@
+<!-- HEADER PER NAVIGARE TRA LE SEZIONI -->
+<header class="app-header">
+	<div class="container">
+		<h1 class="brand">HEADER</h1>
+		<nav class="nav">
+			<div class="nav-items">
+				<a *ngFor="let s of sections" 
+					[routerLink]="s.label === 'Profile' ? null : s.path" 
+					(click)="s.label === 'Profile' ? onProfileClick($event) : closeMenu()"
+					routerLinkActive="active" 
+					class="nav-link" 
+					role="menuitem">{{ s.label }}</a>
+			</div>
+		</nav>
+		<!-- HAMBURGER MENU BUTTON -->
+		<button class="hamburger" (click)="toggleMenu()" [class.active]="isMenuOpen()" aria-label="Toggle menu">
+			<span></span>
+			<span></span>
+			<span></span>
+		</button>
+	</div>
+	
+	<!-- MOBILE MENU -->
+	<nav class="mobile-menu" [class.open]="isMenuOpen()">
+		<a *ngFor="let s of sections" 
+			[routerLink]="s.label === 'Profile' ? null : s.path" 
+			(click)="s.label === 'Profile' ? onProfileClick($event) : closeMenu()"
+			routerLinkActive="active" 
+			class="mobile-menu-link" 
+			role="menuitem">{{ s.label }}</a>
+	</nav>
+</header>
+
+<!-- SOTTOPAGINA -->
+<main class="app-main">
+	<router-outlet></router-outlet>
+</main>

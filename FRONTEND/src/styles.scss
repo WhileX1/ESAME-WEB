@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap');
+
+/* Global reset and full-bleed background to remove white borders */
+:root {
+	--cute-blue: #7cc4ff;
+	--accent-pink: #ffc0e8;
+	--muted-glass: rgba(255,255,255,0.06);
+	--text: #071232;
+}
+
+html {
+	height: 100%;
+	overscroll-behavior: none;
+}
+
+body, app-root {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	background: linear-gradient(180deg, #f7fbff 0%, #e8f4ff 50%, #fffafc 100%);
+	color: var(--text);
+	font-family: 'Quicksand', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	display: flex;
+	flex-direction: column;
+}
+
+app-root {
+	display: flex;
+	flex-direction: column;
+}
+
+.app-main {
+	flex: 1;
+	overflow-y: auto;
+	overflow-x: hidden;
+	scrollbar-gutter: stable;
+}
+
+/* Scrollbar styling */
+.app-main::-webkit-scrollbar-track {
+	background: linear-gradient(180deg, #f7fbff 0%, #e8f4ff 50%, #fffafc 100%);
+}
+
+.app-main {
+	scrollbar-color: #999 transparent;
+}
+
+/* You can add other global styles below */

@@ -1,0 +1,159 @@
+<div class="login-container">
+  <div class="login-card">
+    <!-- Header -->
+    <div class="login-header">
+      <h1>{{ isLoginMode ? 'Accedi' : 'Registrati' }}</h1>
+      <p>{{ isLoginMode ? 'Accedi al tuo account' : 'Crea un nuovo account' }}</p>
+    </div>
+
+    <!-- Messaggi -->
+    <div *ngIf="message" [ngClass]="'message-' + message.type" class="message">
+      {{ message.text }}
+    </div>
+
+    <!-- FORM LOGIN -->
+    <form *ngIf="isLoginMode" (ngSubmit)="login()" class="login-form">
+      <div class="form-group">
+        <label for="loginEmail">Email</label>
+        <input
+          id="loginEmail"
+          type="email"
+          [(ngModel)]="loginEmail"
+          name="loginEmail"
+          placeholder="Inserisci la tua email"
+          autocomplete="username"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="loginPassword">Password</label>
+        <input
+          id="loginPassword"
+          type="password"
+          [(ngModel)]="loginPassword"
+          name="loginPassword"
+          placeholder="Inserisci la tua password"
+          autocomplete="current-password"
+          required
+        />
+      </div>
+
+      <button type="submit" [disabled]="loading" class="btn btn-primary">
+        {{ loading ? '⏳ Accesso in corso...' : '🔐 Accedi' }}
+      </button>
+    </form>
+
+    <!-- FORM REGISTRAZIONE -->
+    <form *ngIf="!isLoginMode" (ngSubmit)="register()" class="registration-form">
+      <!-- Nome -->
+      <div class="form-group">
+        <label for="registerName">Nome *</label>
+        <input
+          id="registerName"
+          type="text"
+          [(ngModel)]="registerName"
+          name="registerName"
+          placeholder="Inserisci il tuo nome"
+          required
+        />
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label for="registerEmail">Email *</label>
+        <input
+          id="registerEmail"
+          type="email"
+          [(ngModel)]="registerEmail"
+          name="registerEmail"
+          placeholder="Inserisci la tua email"
+          autocomplete="username"
+          required
+        />
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label for="registerPassword">Password *</label>
+        <input
+          id="registerPassword"
+          type="password"
+          [(ngModel)]="registerPassword"
+          name="registerPassword"
+          placeholder="Almeno 6 caratteri"
+          autocomplete="new-password"
+          required
+        />
+      </div>
+
+      <!-- Conferma Password -->
+      <div class="form-group">
+        <label for="registerConfirmPassword">Conferma Password *</label>
+        <input
+          id="registerConfirmPassword"
+          type="password"
+          [(ngModel)]="registerConfirmPassword"
+          name="registerConfirmPassword"
+          placeholder="Ripeti la password"
+          autocomplete="new-password"
+          required
+        />
+      </div>
+
+      <!-- Indirizzo -->
+      <div class="form-group">
+        <label for="registerAddress">Indirizzo *</label>
+        <input
+          id="registerAddress"
+          type="text"
+          [(ngModel)]="registerAddress"
+          name="registerAddress"
+          placeholder="Es: Via Roma 1, Milano"
+          required
+        />
+      </div>
+
+      <!-- Admin -->
+      <div class="form-group checkbox">
+        <input
+          id="registerIsAdmin"
+          type="checkbox"
+          [(ngModel)]="registerIsAdmin"
+          name="registerIsAdmin"
+        />
+        <label for="registerIsAdmin">Registrati come Amministratore</label>
+      </div>
+
+      <!-- Password Admin (condizionale) -->
+      <div *ngIf="registerIsAdmin" class="form-group">
+        <label for="registerAdminPassword">Password Amministratore *</label>
+        <input
+          id="registerAdminPassword"
+          type="password"
+          [(ngModel)]="registerAdminPassword"
+          name="registerAdminPassword"
+          placeholder="Inserisci la password amministratore"
+          autocomplete="current-password"
+        />
+      </div>
+
+      <button type="submit" [disabled]="loading" class="btn btn-primary">
+        {{ loading ? '⏳ Registrazione in corso...' : '✍️ Registrati' }}
+      </button>
+    </form>
+
+    <!-- Toggle tra login e registrazione -->
+    <div class="toggle-mode">
+      <p>{{ isLoginMode ? 'Non hai un account?' : 'Hai già un account?' }}</p>
+      <button
+        type="button"
+        (click)="toggleMode()"
+        class="btn btn-secondary"
+        [disabled]="loading"
+      >
+        {{ isLoginMode ? 'Registrati qui' : 'Accedi qui' }}
+      </button>
+    </div>
+  </div>
+</div>

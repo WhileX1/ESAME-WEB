@@ -1,0 +1,99 @@
+<div class="subheader">
+	<div class="filter-row">
+		<div class="date-range">
+			<label>Da <input type="date" [(ngModel)]="dateFrom" autocomplete="off" (change)="applyFilters()" /></label>
+			<label>A <input type="date" [(ngModel)]="dateTo" autocomplete="off" (change)="applyFilters()" /></label>
+		</div>
+
+		<label class="price-label">Prezzo
+			<select [(ngModel)]="priceOp" (change)="onPriceOpChange()">
+				<option value="">--</option>
+				<option value="<">&lt;</option>
+				<option value=">">&gt;</option>
+				<option value="=">=</option>
+				<option value="range">Range</option>
+			</select>
+		</label>
+
+		<div class="price-inputs">
+			<input type="number" placeholder="Valore" [(ngModel)]="priceVal" autocomplete="off" (input)="applyFilters()" />
+			<input type="number" placeholder="Valore" [(ngModel)]="priceValMax" autocomplete="off" (input)="applyFilters()" [disabled]="priceOp !== 'range'" />
+		</div>
+
+		<label>Categoria
+			<select [(ngModel)]="categoria" (change)="applyFilters()">
+				@for (c of categories; track c.value) {
+					<option [value]="c.value">{{c.label}}</option>
+				}
+			</select>
+		</label>
+
+		<label>Ordinamento
+			<select [(ngModel)]="ordinamento" (change)="applyFilters()">
+				<option value="">--</option>
+				<option value="asc">A → Z</option>
+				<option value="desc">Z → A</option>
+			</select>
+		</label>
+
+		<label class="search">
+			<input type="search" placeholder="Cerca nome..." [(ngModel)]="ricerca" autocomplete="off" (input)="applyFilters()" />
+		</label>
+
+		<label class="checkbox">
+			<input type="checkbox" [(ngModel)]="maggiorenni" (change)="applyFilters()" />
+			Maggiorenni
+		</label>
+
+		<label class="checkbox">
+			<input type="checkbox" [(ngModel)]="hasPassword" (change)="applyFilters()" />
+			Password
+		</label>
+
+		<div class="actions">
+			<button type="button" (click)="resetFilters()">Reset</button>
+		</div>
+	</div>
+</div>
+
+<div class="home-content">
+	<!-- LOADING INDICATOR -->
+	<div *ngIf="loading" class="loading">
+		<p>Caricamento eventi...</p>
+	</div>
+
+	<!-- ERROR MESSAGE -->
+	<div *ngIf="error && !loading" class="error">
+		<p>{{ error }}</p>
+	</div>
+
+	<!-- EVENTS LIST -->
+	<div *ngIf="!loading && eventi.length > 0" class="events-list">
+		<h2>Risultati: {{ eventi.length }} eventi trovati</h2>
+		<div class="event-card" *ngFor="let evento of eventi">
+			<h3>{{ evento.NOME_EVENTO }}</h3>
+			<p class="description">{{ evento.DESCRIZIONE_EVENTO }}</p>
+			<div class="event-details">
+				<span class="date">📅 {{ evento.DATA_EVENTO }}</span>
+				<span class="location">📍 {{ evento.INDIRIZZO_EVENTO }}</span>
+				<span class="price" *ngIf="evento.COSTO">💵 {{ evento.COSTO }}€</span>
+				@for (cat of evento.CATEGORIE; track cat) {
+					<span class="category">🏷️ {{ cat }}</span>
+				}
+				<span class="age-restriction" *ngIf="evento.CHECK_MAGGIORENNI">🔞 Maggiorenni</span>
+				<span class="capacity" *ngIf="evento.MAX_PARTECIPANTI">👥 Max: {{ evento.MAX_PARTECIPANTI }}</span>
+				<span class="password" *ngIf="evento.PASSWORD_EVENTO">🔐 Password</span>
+			</div>
+		</div>
+	</div>
+
+	<!-- NO RESULTS -->
+	<div *ngIf="!loading && !error && eventi.length === 0" class="no-results">
+		<p>Nessun evento trovato. Prova a modificare i filtri.</p>
+	</div>
+</div>
+
+<!-- SCROLL TO TOP BUTTON -->
+<button class="scroll-to-top" (click)="scrollToTop()" *ngIf="showScrollButton" title="Torna in cima">
+	↑
+</button>

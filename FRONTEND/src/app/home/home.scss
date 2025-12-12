@@ -502,10 +502,16 @@
 	max-width: 600px;
 	width: 90%;
 	max-height: 85vh;
-	overflow-y: auto;
+	overflow: hidden;
 	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 	position: relative;
 	animation: slideUp 0.3s ease-out;
+}
+
+/* Inner scroll area so the close button remains fixed */
+.modal-scroll {
+	max-height: 85vh;
+	overflow-y: auto;
 }
 
 @keyframes slideUp {

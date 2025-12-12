@@ -104,61 +104,63 @@
 		<!-- Close button -->
 		<button class="modal-close" (click)="closeEventModal()" title="Chiudi">✕</button>
 
-		<!-- Modal body -->
-		<div *ngIf="modalLoading" class="modal-loading">
-			<p>Caricamento dettagli...</p>
-		</div>
-
-		<div *ngIf="modalError && !modalLoading" class="modal-error">
-			<p>{{ modalError }}</p>
-		</div>
-
-		<div *ngIf="selectedEventDetail && !modalLoading" class="modal-body">
-			<h2>{{ selectedEventDetail.NOME_EVENTO }}</h2>
-			<p class="modal-description">{{ selectedEventDetail.DESCRIZIONE_EVENTO }}</p>
-
-			<div class="modal-details">
-				<div class="detail-row" *ngIf="selectedEventDetail.DATA_EVENTO">
-					<span class="label">📅 Data:</span>
-					<span class="value">{{ selectedEventDetail.DATA_EVENTO }}</span>
-				</div>
-
-				<div class="detail-row" *ngIf="selectedEventDetail.INDIRIZZO_EVENTO">
-					<span class="label">📍 Indirizzo:</span>
-					<span class="value">{{ selectedEventDetail.INDIRIZZO_EVENTO }}</span>
-				</div>
-
-				<div class="detail-row" *ngIf="selectedEventDetail.COSTO">
-					<span class="label">💵 Costo:</span>
-					<span class="value">{{ selectedEventDetail.COSTO }}€</span>
-				</div>
-
-				<div class="detail-row" *ngIf="selectedEventDetail.MAX_PARTECIPANTI">
-					<span class="label">👥 Max Partecipanti:</span>
-					<span class="value">{{ selectedEventDetail.MAX_PARTECIPANTI }}</span>
-				</div>
-
-				<div class="detail-row" *ngIf="selectedEventDetail.CHECK_MAGGIORENNI">
-					<span class="label">🔞 Maggiorenni:</span>
-					<span class="value">Sì</span>
-				</div>
-
-				<div class="detail-row" *ngIf="selectedEventDetail.PASSWORD_EVENTO">
-					<span class="label">🔐 Password:</span>
-					<span class="value">Sì (Protetto)</span>
-				</div>
-
-				<div class="detail-row" *ngIf="selectedEventDetail.CATEGORIE && selectedEventDetail.CATEGORIE.length > 0">
-					<span class="label">🏷️ Categorie:</span>
-					<div class="categories-list">
-						@for (cat of selectedEventDetail.CATEGORIE; track cat) {
-							<span class="category-badge">{{ cat }}</span>
-						}
-					</div>
-				</div>
+		<div class="modal-scroll">
+			<!-- Modal body -->
+			<div *ngIf="modalLoading" class="modal-loading">
+				<p>Caricamento dettagli...</p>
 			</div>
 
-			<button class="btn btn-primary" (click)="closeEventModal()">Chiudi</button>
+			<div *ngIf="modalError && !modalLoading" class="modal-error">
+				<p>{{ modalError }}</p>
+			</div>
+
+			<div *ngIf="selectedEventDetail && !modalLoading" class="modal-body">
+				<h2>{{ selectedEventDetail.NOME_EVENTO }}</h2>
+				<p class="modal-description">{{ selectedEventDetail.DESCRIZIONE_EVENTO }}</p>
+
+				<div class="modal-details">
+					<div class="detail-row" *ngIf="selectedEventDetail.DATA_EVENTO">
+						<span class="label">📅 Data:</span>
+						<span class="value">{{ selectedEventDetail.DATA_EVENTO }}</span>
+					</div>
+
+					<div class="detail-row" *ngIf="selectedEventDetail.INDIRIZZO_EVENTO">
+						<span class="label">📍 Indirizzo:</span>
+						<span class="value">{{ selectedEventDetail.INDIRIZZO_EVENTO }}</span>
+					</div>
+
+					<div class="detail-row" *ngIf="selectedEventDetail.COSTO">
+						<span class="label">💵 Costo:</span>
+						<span class="value">{{ selectedEventDetail.COSTO }}€</span>
+					</div>
+
+					<div class="detail-row" *ngIf="selectedEventDetail.MAX_PARTECIPANTI">
+						<span class="label">👥 Max Partecipanti:</span>
+						<span class="value">{{ selectedEventDetail.MAX_PARTECIPANTI }}</span>
+					</div>
+
+					<div class="detail-row" *ngIf="selectedEventDetail.CHECK_MAGGIORENNI">
+						<span class="label">🔞 Maggiorenni:</span>
+						<span class="value">Sì</span>
+					</div>
+
+					<div class="detail-row" *ngIf="selectedEventDetail.PASSWORD_EVENTO">
+						<span class="label">🔐 Password:</span>
+						<span class="value">Sì (Protetto)</span>
+					</div>
+
+					<div class="detail-row" *ngIf="selectedEventDetail.CATEGORIE && selectedEventDetail.CATEGORIE.length > 0">
+						<span class="label">🏷️ Categorie:</span>
+						<div class="categories-list">
+							@for (cat of selectedEventDetail.CATEGORIE; track cat) {
+								<span class="category-badge">{{ cat }}</span>
+							}
+						</div>
+					</div>
+				</div>
+
+				<button class="btn btn-primary" (click)="closeEventModal()">Chiudi</button>
+			</div>
 		</div>
 	</div>
 </div>

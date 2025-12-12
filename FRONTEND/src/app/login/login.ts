@@ -82,9 +82,9 @@ export class Login implements OnInit {
         // Salva i dati utente in sessionStorage
         sessionStorage.setItem('user', JSON.stringify(response.utente));
         
-        // Reindirizza alla home dopo 1 secondo
+        // Reindirizza al profilo dopo 1 secondo
         setTimeout(() => {
-          this.router.navigate(['/home']);
+          this.router.navigate(['/profile']);
         }, 1000);
       },
       error: (err: HttpErrorResponse) => {

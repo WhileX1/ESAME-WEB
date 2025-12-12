@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { routes } from './app.routes';
@@ -10,7 +10,7 @@ import { routes } from './app.routes';
   templateUrl: './app.html',
   styleUrls: ['./app.scss'],
 })
-export class App {
+export class App implements OnInit {
   protected readonly title = signal('FRONTEND');
   isLoggedIn = signal(false);
   isMenuOpen = signal(false);
@@ -21,10 +21,21 @@ export class App {
     .map((r) => {
       const p = r.path as string;
       return { label: p.charAt(0).toUpperCase() + p.slice(1), path: '/' + p };
-    })
-    .concat([{ label: 'Profile', path: '/profile' }]); // Sempre mostra Profile
+    });
 
   constructor(private router: Router) {}
+
+  ngOnInit() {
+    // Verifica se utente è loggato da sessionStorage
+    this.checkLoginStatus();
+    // Ricontrolla ogni volta che torna al componente
+    window.addEventListener('focus', () => this.checkLoginStatus());
+  }
+
+  private checkLoginStatus() {
+    const userStr = sessionStorage.getItem('user');
+    this.isLoggedIn.set(!!userStr);
+  }
 
   onProfileClick(e: Event) {
     e.preventDefault();

@@ -586,6 +586,32 @@
 	overflow-wrap: break-word;
 }
 
+/* Make modal non-selectable except for the title and description */
+.modal-content,
+.modal-scroll,
+.modal-body,
+.modal-details,
+.modal-loading,
+.modal-error,
+.modal-close,
+.modal-close *,
+.detail-row .label,
+.detail-row .value,
+.categories-list,
+.category-badge,
+.modal-body .btn {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
+
+.modal-body h2,
+.modal-description {
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+}
+
 .modal-details {
 	margin: 1.5rem 0;
 	border-top: 1px solid rgba(11, 29, 78, 0.1);

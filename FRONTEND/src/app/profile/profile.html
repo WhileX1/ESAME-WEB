@@ -1,1 +1,35 @@
-<p>profile works!</p>
+<div class="profile-container">
+  <div *ngIf="user" class="profile-card">
+    <div class="profile-header">
+      <h1>{{ user.NOME_UTENTE }}</h1>
+      <p *ngIf="user.CHECK_ADMIN" class="admin-badge">👨‍💼 Amministratore</p>
+    </div>
+
+    <div class="profile-details">
+      <div class="detail-row">
+        <span class="label">📧 Email:</span>
+        <span class="value">{{ user.EMAIL_UTENTE }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="label">📍 Indirizzo:</span>
+        <span class="value">{{ user.INDIRIZZO_UTENTE || '—' }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="label">📅 Iscritto dal:</span>
+        <span class="value">{{ user.DATA_REGISTRAZIONE | date: 'dd/MM/yyyy' }}</span>
+      </div>
+    </div>
+
+    <div class="profile-actions">
+      <button class="btn btn-logout" (click)="logout()" [disabled]="loading" title="Esci dall'account">
+        {{ loading ? '⏳ Logout in corso...' : '🚪 Logout' }}
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="!user" class="no-profile">
+    <p>Caricamento profilo...</p>
+  </div>
+</div>

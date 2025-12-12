@@ -72,12 +72,9 @@ export class Login implements OnInit {
       PASSWORD_UTENTE: this.loginPassword
     };
 
-    console.log('🔐 Tentativo di login...', loginData);
-
-    this.http.post<any>(`${this.apiUrl}/LOGIN`, loginData).subscribe({
+    this.http.post<any>(`${this.apiUrl}/LOGIN`, loginData, { withCredentials: true }).subscribe({
       next: (response) => {
         this.showMessage('success', response.message);
-        console.log('✅ Login riuscito:', response.utente);
         
         // Salva i dati utente in sessionStorage
         sessionStorage.setItem('user', JSON.stringify(response.utente));
@@ -145,12 +142,9 @@ export class Login implements OnInit {
       registerData.ADMIN_PASSWORD = this.registerAdminPassword;
     }
 
-    console.log('📝 Tentativo di registrazione...', registerData);
-
-    this.http.post<any>(`${this.apiUrl}/UTENTI`, registerData).subscribe({
+    this.http.post<any>(`${this.apiUrl}/UTENTI`, registerData, { withCredentials: true }).subscribe({
       next: (response) => {
         this.showMessage('success', response.message);
-        console.log('✅ Registrazione riuscita:', response.utente);
         
         // Auto-login dopo registrazione
         setTimeout(() => {
@@ -176,7 +170,6 @@ export class Login implements OnInit {
    */
   private showMessage(type: 'success' | 'error', text: string) {
     this.message = { type, text };
-    console.log(`${type === 'success' ? '✅' : '❌'} ${text}`);
   }
 
   /**

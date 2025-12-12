@@ -1,7 +1,21 @@
 import { Component, signal, OnInit } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router, CanActivateFn } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { routes } from './app.routes';
+import { inject } from '@angular/core';
+
+// Auth Guard per proteggere le rotte
+export const authGuard: CanActivateFn = (route, state) => {
+  const router = inject(Router);
+  const userStr = sessionStorage.getItem('user');
+  
+  if (userStr) {
+    return true;
+  } else {
+    router.navigate(['/login']);
+    return false;
+  }
+};
 
 @Component({
   selector: 'app-root',
@@ -39,7 +53,8 @@ export class App implements OnInit {
 
   onProfileClick(e: Event) {
     e.preventDefault();
-    if (!this.isLoggedIn()) {
+    const userStr = sessionStorage.getItem('user');
+    if (!userStr) {
       this.router.navigate(['/login']);
     } else {
       this.router.navigate(['/profile']);

@@ -1975,7 +1975,11 @@ async def crea_evento(request: Request, ID_UTENTE: Optional[int] = None):
                 # GESTIONE SINGOLO VALORE O LISTA
                 if isinstance(categorie_input, str):
                     categorie_input = [categorie_input]
-                
+
+                # LIMITAZIONE MASSIMA 3 CATEGORIE
+                if len(categorie_input) > 3:
+                    raise HTTPException(status_code=422, detail="Al massimo 3 categorie sono permesse")
+
                 # ASSOCIAZIONE CATEGORIE
                 for nome_cat in categorie_input:
                     nome_cat = normalizza_input_nullo(nome_cat, tipo="str")
@@ -1989,7 +1993,7 @@ async def crea_evento(request: Request, ID_UTENTE: Optional[int] = None):
                         query_assoc = "INSERT INTO evento_categoria (ID_EVENTO, ID_CATEGORIA) VALUES (%s, %s)"
                         cursor.execute(query_assoc, (ID_EVENTO, id_categoria))
                         categorie.append(nome_cat)
-                
+
                 connessione.commit()
 
             # RISPOSTA JSON
@@ -2134,21 +2138,37 @@ async def aggiorna_evento(ID_EVENTO: int, request: Request):
             ))
             connessione.commit()
 
-            # AGGIORNA CATEGORIA EVENTO
-            if nome_categoria is not None:
-               
-               # VERIFICA SE ASSOCIATI
-                cursor.execute("SELECT * FROM evento_categoria WHERE ID_EVENTO = %s", (ID_EVENTO,))
-                esiste = cursor.fetchone()
-                if esiste:
-                    cursor.execute(
-                        "UPDATE evento_categoria SET ID_CATEGORIA = %s WHERE ID_EVENTO = %s",
-                        (id_categoria, ID_EVENTO)
-                    )
-                else:
+            # AGGIORNA/IMPOSTA CATEGORIE EVENTO
+            categorie_input = data.get("CATEGORIE") if "CATEGORIE" in data else data.get("NOME_CATEGORIA")
+            if categorie_input is not None:
+                # normalize to list
+                if isinstance(categorie_input, str):
+                    categorie_input = [categorie_input]
+
+                # LIMITAZIONE MASSIMA 3 CATEGORIE
+                if len(categorie_input) > 3:
+                    raise HTTPException(status_code=422, detail="Al massimo 3 categorie sono permesse")
+
+                # RISOLVI ID CATEGORIE E PREPARA INSERIMENTO
+                ids_categorie = []
+                nomi_categorie = []
+                for nome_cat in categorie_input:
+                    nome_cat = normalizza_input_nullo(nome_cat, tipo="str")
+                    if not nome_cat:
+                        continue
+                    cursor.execute("SELECT ID_CATEGORIA FROM categoria WHERE NOME_CATEGORIA = %s", (nome_cat,))
+                    row = cursor.fetchone()
+                    if not row:
+                        raise HTTPException(status_code=404, detail=f"Categoria '{nome_cat}' non trovata")
+                    ids_categorie.append(row["ID_CATEGORIA"])
+                    nomi_categorie.append(nome_cat)
+
+                # RIMUOVI ASSOCIAZIONI CORRENTI E SOSTITUISCI CON LE NUOVE
+                cursor.execute("DELETE FROM evento_categoria WHERE ID_EVENTO = %s", (ID_EVENTO,))
+                for id_cat in ids_categorie:
                     cursor.execute(
                         "INSERT INTO evento_categoria (ID_EVENTO, ID_CATEGORIA) VALUES (%s, %s)",
-                        (ID_EVENTO, id_categoria)
+                        (ID_EVENTO, id_cat)
                     )
                 connessione.commit()
 

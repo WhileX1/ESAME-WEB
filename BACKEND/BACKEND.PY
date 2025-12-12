@@ -1796,6 +1796,8 @@ async def get_evento_selezionato(ID_EVENTO: int):
                     evento.COSTO,
                     evento.CHECK_MAGGIORENNI,
                     evento.PASSWORD_EVENTO,
+                    evento.MAX_PARTECIPANTI,
+                    evento.COORDINATE_EVENTO,
                     utente.NOME_UTENTE,
                     categoria.NOME_CATEGORIA AS CATEGORIA
                 FROM evento
@@ -1805,14 +1807,39 @@ async def get_evento_selezionato(ID_EVENTO: int):
                 WHERE evento.ID_EVENTO = %s
             """
             cursor.execute(query, (ID_EVENTO,))
-            evento = cursor.fetchone()
+            risultati = cursor.fetchall()
 
             # SE NON TROVATO
-            if not evento:
+            if not risultati:
                 raise HTTPException(status_code=404, detail=f"Nessun evento con ID {ID_EVENTO} trovato")
 
+            # AGGREGAZIONE CATEGORIE DA RIGHE DUPLICATE
+            evento_dict = None
+            categorie = set()
+            
+            for row in risultati:
+                if evento_dict is None:
+                    evento_dict = {
+                        'ID_EVENTO': row['ID_EVENTO'],
+                        'NOME_EVENTO': row['NOME_EVENTO'],
+                        'DESCRIZIONE_EVENTO': row['DESCRIZIONE_EVENTO'],
+                        'DATA_EVENTO': row['DATA_EVENTO'],
+                        'INDIRIZZO_EVENTO': row['INDIRIZZO_EVENTO'],
+                        'COSTO': row['COSTO'],
+                        'CHECK_MAGGIORENNI': row['CHECK_MAGGIORENNI'],
+                        'PASSWORD_EVENTO': row['PASSWORD_EVENTO'],
+                        'MAX_PARTECIPANTI': row['MAX_PARTECIPANTI'],
+                        'COORDINATE_EVENTO': row['COORDINATE_EVENTO'],
+                        'NOME_UTENTE': row['NOME_UTENTE']
+                    }
+                
+                if row['CATEGORIA']:
+                    categorie.add(row['CATEGORIA'])
+            
+            evento_dict['CATEGORIE'] = list(categorie) if categorie else []
+
             # CONVERSIONE TIMESTAMP E COORDINATE
-            evento_convertito = conversione([evento])[0]
+            evento_convertito = conversione([evento_dict])[0]
 
             # RISPOSTA JSON
             return JSONResponse(content=evento_convertito)
@@ -2135,11 +2162,34 @@ async def aggiorna_evento(ID_EVENTO: int, request: Request):
                 LEFT JOIN categoria ON evento_categoria.ID_CATEGORIA = categoria.ID_CATEGORIA
                 WHERE evento.ID_EVENTO = %s
             """, (ID_EVENTO,))
-            evento_aggiornato = cursor.fetchone()
+            risultati = cursor.fetchall()
 
             # SE NON TROVATO
-            if not evento_aggiornato:
+            if not risultati:
                 raise HTTPException(status_code=404, detail="Evento non trovato dopo aggiornamento")
+
+            # AGGREGAZIONE CATEGORIE DA RIGHE DUPLICATE
+            evento_aggiornato = None
+            categorie = set()
+            
+            for row in risultati:
+                if evento_aggiornato is None:
+                    evento_aggiornato = {
+                        'ID_EVENTO': row['ID_EVENTO'],
+                        'NOME_EVENTO': row['NOME_EVENTO'],
+                        'DESCRIZIONE_EVENTO': row['DESCRIZIONE_EVENTO'],
+                        'DATA_EVENTO': row['DATA_EVENTO'],
+                        'INDIRIZZO_EVENTO': row['INDIRIZZO_EVENTO'],
+                        'COSTO': row['COSTO'],
+                        'CHECK_MAGGIORENNI': row['CHECK_MAGGIORENNI'],
+                        'MAX_PARTECIPANTI': row['MAX_PARTECIPANTI'],
+                        'COORDINATE_EVENTO': row['COORDINATE_EVENTO']
+                    }
+                
+                if row['CATEGORIA']:
+                    categorie.add(row['CATEGORIA'])
+            
+            evento_aggiornato['CATEGORIE'] = list(categorie) if categorie else []
 
             # CONVERSIONE TIMESTAMP E COORDINATE
             evento_convertito = conversione([evento_aggiornato])[0]

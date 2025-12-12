@@ -67,6 +67,13 @@ export class Home implements OnInit {
     { value: '', label: 'Tutte' }
   ];
 
+  // Modal state
+  showModal = false;
+  selectedEventId: number | null = null;
+  selectedEventDetail: any = null;
+  modalLoading = false;
+  modalError: string | null = null;
+
   apiUrl = 'https://127.0.0.1:8000';
 
   constructor(private http: HttpClient) {}
@@ -267,5 +274,46 @@ export class Home implements OnInit {
     if (appMain) {
       appMain.scrollTo({ top: 0, behavior: 'smooth' });
     }
+  }
+
+  /**
+   * Apre la modale e carica i dettagli dell'evento
+   */
+  openEventModal(eventId: number) {
+    this.selectedEventId = eventId;
+    this.showModal = true;
+    this.modalLoading = true;
+    this.modalError = null;
+    this.selectedEventDetail = null;
+
+    // Fetch event details
+    const url = `${this.apiUrl}/EVENTI/${eventId}`;
+    this.http.get<any>(url).subscribe({
+      next: (response: any) => {
+        this.selectedEventDetail = response.evento || response;
+        this.modalLoading = false;
+      },
+      error: (err: any) => {
+        let errorMessage = 'Errore nel caricamento dell\'evento';
+        if (err.error?.detail) {
+          errorMessage = err.error.detail;
+        } else if (err.status === 0) {
+          errorMessage = 'Impossibile raggiungere il backend';
+        }
+        this.modalError = errorMessage;
+        this.modalLoading = false;
+      }
+    });
+  }
+
+  /**
+   * Chiude la modale
+   */
+  closeEventModal() {
+    this.showModal = false;
+    this.selectedEventId = null;
+    this.selectedEventDetail = null;
+    this.modalLoading = false;
+    this.modalError = null;
   }
 }

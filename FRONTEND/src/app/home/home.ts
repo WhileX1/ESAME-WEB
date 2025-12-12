@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, NgIf, NgForOf } from '@angular/common';
+import { CommonModule, NgIf, NgForOf, NgClass, NgStyle } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -33,7 +33,7 @@ export interface EventoResponse {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, NgIf, NgForOf, FormsModule],
+  imports: [CommonModule, NgIf, NgForOf, NgClass, NgStyle, FormsModule],
   templateUrl: './home.html',
   styleUrls: ['./home.scss'],
 })

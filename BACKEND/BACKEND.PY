@@ -199,7 +199,7 @@ connessione = mysql.connector.connect(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permetti richieste da qualsiasi origine (puoi specificare domini specifici)
+    allow_origins=["http://localhost:4200", "https://localhost:4200"],  # Origini specifiche per credenziali
     allow_credentials=True,
     allow_methods=["*"],  # Permetti tutti i metodi HTTP (GET, POST, DELETE, ecc.)
     allow_headers=["*"],  # Permetti tutti gli header
@@ -836,11 +836,10 @@ async def login(request: Request):
 # GET /LOGOUT
 @app.get("/LOGOUT")
 async def logout(request: Request):
+    # Cancella la sessione se esiste
     if "ID_UTENTE" in request.session:
         request.session.clear()
-        return JSONResponse({"message": "Logout effettuato con successo"})
-    else:
-        return JSONResponse({"message": "Non sei loggato"}, status_code=401)
+    return JSONResponse({"message": "Logout effettuato con successo"})
 
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━#
 # 🡹 file:///C%3A/Users/Sviatoslav/Desktop/ESAME%20WEB/BACKEND/BACKEND.PY#L240 🡹
@@ -2138,7 +2137,7 @@ async def aggiorna_evento(ID_EVENTO: int, request: Request):
             ))
             connessione.commit()
 
-            # AGGIORNA/IMPOSTA CATEGORIE EVENTO
+            # AGGIORNA/IMPOSTA CATEGORIE EVENTO (supporta CATEGORIE list o NOME_CATEGORIA singolo)
             categorie_input = data.get("CATEGORIE") if "CATEGORIE" in data else data.get("NOME_CATEGORIA")
             if categorie_input is not None:
                 # normalize to list

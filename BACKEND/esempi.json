@@ -1,8 +1,8 @@
 [
     {
         "EMAIL_UTENTE":"user1@gmail.com",
-        "NOME_UTENTE":"user",
-        "PASSWORD_UTENTE":"user",
+        "NOME_UTENTE":"user_1",
+        "PASSWORD_UTENTE":"user_1",
         "COORDINATE_UTENTE":"45.691779334143924 9.807092900511178",
         "INDIRIZZO_UTENTE":"Via del Convento, 1, 24060 San Paolo d'Argon BG",
         "CHECK_ADMIN":1,

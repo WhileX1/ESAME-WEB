@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Creato il: Dic 04, 2025 alle 11:49
+-- Creato il: Dic 14, 2025 alle 23:19
 -- Versione del server: 5.7.24
 -- Versione PHP: 8.3.1
 
@@ -39,7 +39,8 @@ CREATE TABLE `categoria` (
 
 INSERT INTO `categoria` (`ID_CATEGORIA`, `NOME_CATEGORIA`, `ID_UTENTE`) VALUES
 (1, 'Concerto', 1),
-(3, 'Pizzata', 1);
+(3, 'Pizzata', 1),
+(4, 'Passeggiata', 1);
 
 -- --------------------------------------------------------
 
@@ -50,7 +51,7 @@ INSERT INTO `categoria` (`ID_CATEGORIA`, `NOME_CATEGORIA`, `ID_UTENTE`) VALUES
 CREATE TABLE `evento` (
   `ID_EVENTO` int(11) NOT NULL,
   `NOME_EVENTO` varchar(50) NOT NULL,
-  `DESCRIZIONE_EVENTO` varchar(255) NOT NULL,
+  `DESCRIZIONE_EVENTO` text NOT NULL,
   `DATA_EVENTO` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `COSTO` decimal(10,2) NOT NULL DEFAULT '0.00',
   `MAX_PARTECIPANTI` int(11) DEFAULT NULL,
@@ -66,10 +67,11 @@ CREATE TABLE `evento` (
 --
 
 INSERT INTO `evento` (`ID_EVENTO`, `NOME_EVENTO`, `DESCRIZIONE_EVENTO`, `DATA_EVENTO`, `COSTO`, `MAX_PARTECIPANTI`, `CHECK_MAGGIORENNI`, `INDIRIZZO_EVENTO`, `COORDINATE_EVENTO`, `PASSWORD_EVENTO`, `ID_UTENTE`) VALUES
-(14, 'Concerto Jazz al Parco', 'Una serata di musica jazz dal vivo sotto le stelle.', '2025-12-04 11:43:15', '15.00', 10, 1, 'Parco Sempione, Milano, Italia', 0xe61000000101000000ecede0719b5a2240189062258bbc4640, '$2b$12$nZF3q6DlT/mn0pE9umhZx.D2PsM9FwnMbssdr2e/fPg9xlln.EsVW', 1),
-(15, 'Meeting in luogo a caso', 'Naruto run', '2025-12-02 09:00:00', '0.00', 0, 0, 'Farmacia Aurora, 29, Via Aurora, Incirano, Paderno Dugnano, Zona Omogenea Milano Nord, Milano, Lombardia, 20037, Italia', 0xe6100000010100000013bc7c467d55224014db937659c94640, NULL, 2),
-(16, 'MotoMeet', 'Una serata di musica jazz dal vivo sotto le stelle.', '2025-06-15 19:00:00', '85.00', 10, 1, 'Parco Paradiso, Paradiso, Svizzera', 0xe61000000101000000a0d10c9876e42140c6c210397dfe4640, '$2b$12$dWem1u6RzzWy/bsO6bDOM.DCIbz5s7WtBXU2I87.95z2/BYGwsB62', 1),
-(28, 'TEST', 'TEST.', '2024-06-15 19:00:00', '100.00', 0, 1, 'TEST', 0xe61000000101000000e919b1057357494080553f8056fd4040, '$2b$12$iAbrkpnBqv1D7RPVKZQfzeNP3ZM3E/T7KsFzjdtiBB1ANvwHR0xdu', 1);
+(14, 'Concerto Jazz al Parco', 'Una serata di musica jazz dal vivo sotto le stelle.', '2026-12-04 11:43:15', '15.00', 10, 1, 'Parco Sempione, Milano, Italia', 0xe61000000101000000ecede0719b5a2240189062258bbc4640, '$2b$12$nZF3q6DlT/mn0pE9umhZx.D2PsM9FwnMbssdr2e/fPg9xlln.EsVW', 1),
+(15, 'Meeting in luogo a caso', 'Naruto run', '2026-12-02 09:00:00', '0.00', 0, 0, 'Farmacia Aurora, 29, Via Aurora, Incirano, Paderno Dugnano, Zona Omogenea Milano Nord, Milano, Lombardia, 20037, Italia', 0xe6100000010100000013bc7c467d55224014db937659c94640, NULL, 2),
+(16, 'MotoMeet', 'Una serata di musica jazz dal vivo sotto le stelle.', '2026-06-15 19:00:00', '85.00', 10, 1, 'Parco Paradiso, Paradiso, Svizzera', 0xe61000000101000000a0d10c9876e42140c6c210397dfe4640, '$2b$12$dWem1u6RzzWy/bsO6bDOM.DCIbz5s7WtBXU2I87.95z2/BYGwsB62', 1),
+(28, 'TEST', 'L’evento TEST è pensato come un momento speciale dedicato a chi desidera trascorrere una serata diversa dal solito, immerso in un’atmosfera vivace e coinvolgente. Programmato per il 15 giugno 2026 alle ore 21:00, questo appuntamento si terrà presso TEST, una location scelta per garantire comfort, praticità e un ambiente ideale per vivere l’esperienza al meglio.\n\nLa serata combina due elementi molto amati dal pubblico: da una parte l’energia unica di un concerto, capace di regalare emozioni autentiche attraverso musica, performance e interazione con i partecipanti; dall’altra il clima informale e conviviale tipico di una pizzata, perfetta per socializzare, conoscersi e condividere momenti di divertimento davanti a un buon piatto.\n\nL’ingresso prevede un costo di 100€, che include tutte le attività previste durante la serata. È richiesto il rispetto della verifica di maggiore età, poiché l’evento è pensato esclusivamente per un pubblico adulto. Sebbene non sia previsto un limite massimo di partecipanti, l’evento mantiene comunque un’impronta organizzata e gestita in sicurezza, garantendo un’esperienza piacevole a chiunque decida di prendervi parte.\n\nPer accedere sarà necessario utilizzare la password dell’evento, pensata per mantenere un clima riservato e assicurare che solo gli invitati o chi ha ricevuto le informazioni corrette possa partecipare. Questa scelta contribuisce a creare un ambiente selezionato, tranquillo e perfetto per godersi ogni istante della serata.\n\nIn sintesi, TEST è un appuntamento che unisce musica, gusto e socialità in un’unica occasione, ideale per chi cerca una serata ricca di emozioni, buona compagnia e momenti indimenticabili. Una combinazione semplice ma efficace, pensata per offrire un’esperienza piacevole e memorabile. Buon divertimento!', '2026-06-15 19:00:00', '100.00', 0, 1, 'TEST', 0xe61000000101000000e919b1057357494080553f8056fd4040, '$2b$12$iAbrkpnBqv1D7RPVKZQfzeNP3ZM3E/T7KsFzjdtiBB1ANvwHR0xdu', 1),
+(29, 'Angular', '...', '2026-02-11 23:00:00', '1.00', 0, 0, 'Via Roma', 0xe6100000010100000097c62fbc92bc1f406d14a3f842594640, NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -88,8 +90,10 @@ CREATE TABLE `evento_categoria` (
 --
 
 INSERT INTO `evento_categoria` (`ID_EVENTO_CATEGORIA`, `ID_CATEGORIA`, `ID_EVENTO`) VALUES
-(4, 1, 28),
-(5, 3, 28);
+(6, 3, 28),
+(7, 1, 28),
+(8, 4, 28),
+(9, 4, 29);
 
 -- --------------------------------------------------------
 
@@ -109,7 +113,11 @@ CREATE TABLE `iscrizione` (
 --
 
 INSERT INTO `iscrizione` (`ID_ISCRIZIONE`, `ID_UTENTE`, `ID_EVENTO`, `DATA_ISCRIZIONE`) VALUES
-(14, 2, 14, '2025-12-04 11:44:54');
+(14, 2, 14, '2025-12-04 11:44:54'),
+(40, 1, 14, '2025-12-14 20:13:35'),
+(46, 2, 15, '2025-12-14 20:25:43'),
+(47, 2, 28, '2025-12-14 20:29:31'),
+(48, 1, 16, '2025-12-14 20:31:58');
 
 -- --------------------------------------------------------
 
@@ -133,7 +141,7 @@ CREATE TABLE `utente` (
 --
 
 INSERT INTO `utente` (`ID_UTENTE`, `EMAIL_UTENTE`, `NOME_UTENTE`, `PASSWORD_UTENTE`, `COORDINATE_UTENTE`, `INDIRIZZO_UTENTE`, `DATA_REGISTRAZIONE`, `CHECK_ADMIN`) VALUES
-(1, 'user1@gmail.com', 'user', '$2b$12$ufTorKGe0ftCGA0.Qo0YHuw3fpgQi3BqLRxf2oFzXJfowO8l1qstG', 0xe61000000101000000ff0ed9473b9d23403119a8398cd84640, 'Via del Convento, 1, 24060 San Paolo d\'Argon BG', '2025-05-20 08:17:29', 1),
+(1, 'user1@gmail.com', 'user_1', '$2b$12$WXHR/YeMZXz2pWQQz4qCpuiEkNYlhIgr1pjtmND4ZNBeWF/tlRZSm', 0xe6100000010100000090604fe042f728402cadd05158f24440, 'Roma', '2025-12-14 19:38:36', 1),
 (2, 'user2@gmail.com', 'user', '$2b$12$JAAtPHCTBnDHV8V1Xf63BOhnjzUNWrwqmywn4GbIqznQ8.fm2fVVW', 0xe61000000101000000bc38961c1c9d2340780b24287ed84640, 'Via del Convento, 1, 24060 San Paolo d\'Argon BG', '2025-12-04 11:14:18', 0),
 (9, 'user3@gmail.com', 'user', '$2b$12$2aDbxBRpObH8tBlL.PeEfOsAy2PApWRQpA3j8Wvwrf8NVeXW6HMYy', 0xe61000000101000000bc38961c1c9d2340780b24287ed84640, 'Via del Convento, 1, 24060 San Paolo d\'Argon BG', '2025-12-02 22:13:01', 0),
 (10, 'user4@gmail.com', 'user', '$2b$12$13AugDPTFX5mvNuFtlcUKeJkCr2BsQMOqVg3T5eshZGOWT.mX4ZaC', 0xe61000000101000000bc38961c1c9d2340780b24287ed84640, 'Abbazia di San Paolo d’Argon, 1, Via del Convento, San Paolo d\'Argon, Bergamo, Lombardia, 24060, Italia', '2025-12-02 22:13:47', 0);
@@ -189,25 +197,25 @@ ALTER TABLE `utente`
 -- AUTO_INCREMENT per la tabella `categoria`
 --
 ALTER TABLE `categoria`
-  MODIFY `ID_CATEGORIA` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `ID_CATEGORIA` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT per la tabella `evento`
 --
 ALTER TABLE `evento`
-  MODIFY `ID_EVENTO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `ID_EVENTO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT per la tabella `evento_categoria`
 --
 ALTER TABLE `evento_categoria`
-  MODIFY `ID_EVENTO_CATEGORIA` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `ID_EVENTO_CATEGORIA` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT per la tabella `iscrizione`
 --
 ALTER TABLE `iscrizione`
-  MODIFY `ID_ISCRIZIONE` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `ID_ISCRIZIONE` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
 
 --
 -- AUTO_INCREMENT per la tabella `utente`

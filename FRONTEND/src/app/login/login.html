@@ -6,10 +6,7 @@
       <p>{{ isLoginMode ? 'Accedi al tuo account' : 'Crea un nuovo account' }}</p>
     </div>
 
-    <!-- Messaggi -->
-    <div *ngIf="message" [ngClass]="'message-' + message.type" class="message">
-      {{ message.text }}
-    </div>
+    <!-- Messages handled by global NotificationService -->
 
     <!-- FORM LOGIN -->
     <form *ngIf="isLoginMode" (ngSubmit)="login()" class="login-form">

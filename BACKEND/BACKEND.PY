@@ -199,10 +199,11 @@ connessione = mysql.connector.connect(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200", "https://localhost:4200"],  # Origini specifiche per credenziali
+    allow_origins=["http://localhost:4200", "https://localhost:4200", "http://127.0.0.1:4200", "https://127.0.0.1:4200"],  # Origini specifiche per credenziali
     allow_credentials=True,
     allow_methods=["*"],  # Permetti tutti i metodi HTTP (GET, POST, DELETE, ecc.)
     allow_headers=["*"],  # Permetti tutti gli header
+    expose_headers=["Set-Cookie"],  # Esponi Set-Cookie header
 )
 
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━| AVVIO |━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━#
@@ -462,6 +463,7 @@ class UtenteUpdate(BaseModel):
     ID_UTENTE: Optional[int] = None
     EMAIL_UTENTE: Optional[str] = None
     PASSWORD_UTENTE: Optional[str] = None
+    PASSWORD_ATTUALE: Optional[str] = None  # Per autenticazione basata su password
     NOME_UTENTE: Optional[str] = None
     DATA_REGISTRAZIONE: Optional[str] = None  # oppure datetime
     CHECK_ADMIN: Optional[bool] = None
@@ -544,7 +546,6 @@ def verifica_coordinate_indirizzo(indirizzo: str, coordinate: str = None, soglia
     coordinate_nominatim = (latitudine_nominatim, longitudine_nominatim)
     # SE NON FORNITE COORDINATE 🡺 COORDINATE NOMINATIM
     if not coordinate:
-        logging.info("Coordinate non fornite, usando quelle di Nominatim")
         return {
             "coordinate": f"{latitudine_nominatim} {longitudine_nominatim}",  # senza POINT
             "distanza_metri": 0
@@ -577,6 +578,7 @@ def verifica_admin(id_sessione: int, cursor):
     query = "SELECT CHECK_ADMIN FROM utente WHERE ID_UTENTE = %s"
     cursor.execute(query, (id_sessione,))
     result = cursor.fetchone()
+    
     # SE TROVATO E ADMIN 🡺 TRUE
     if result and result.get("CHECK_ADMIN") == 1:
         return id_sessione, True
@@ -752,7 +754,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-change-me")
 if SECRET_KEY == "dev-secret-change-me":
     logging.warning("Using default SECRET_KEY — impostare SECRET_KEY nel file .env o come variabile d'ambiente in produzione")
-app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, same_site="lax", https_only=False, max_age=3600)
 
 # POST /LOGIN
 @limiter.limit("5/minute")                                          #   🡸 MAX 5 LOGIN TENTATIVI AL MINUTO PER IP
@@ -907,6 +909,15 @@ async def get_utenti(request: Request):
     # VERIFICA SESSIONE
     id_sessione = request.session.get("ID_UTENTE")
 
+    # FALLBACK: se non c'è sessione, prova l'header X-Session-ID
+    if not id_sessione:
+        session_id_header = request.headers.get("X-Session-ID")
+        if session_id_header:
+            try:
+                id_sessione = int(session_id_header)
+            except (ValueError, TypeError):
+                pass
+
     # INIZIO
     try:
         with connessione.cursor(dictionary=True) as cursor:
@@ -952,9 +963,9 @@ async def get_utenti(request: Request):
                 values.append(f"%{ricerca.lower()}%")
 
             # FILTRO ADMIN (0 / 1)
-            if admin == "1":
+            if admin is True:
                 conditions.append("CHECK_ADMIN = 1")
-            elif admin == "0":
+            elif admin is False:
                 conditions.append("CHECK_ADMIN = 0")
 
             # COSTRUZIONE WHERE DINAMICA
@@ -1156,12 +1167,40 @@ async def update_utente(ID_UTENTE: int, request: Request):
             # VERIFICA SESSIONE
             id_sessione = request.session.get("ID_UTENTE")
 
-            # VERIFICA ADMIN
-            id_verificato, is_admin = verifica_admin(id_sessione, cursor)
+            # FALLBACK: se non c'è sessione, prova l'header X-Session-ID
+            if not id_sessione:
+                session_id_header = request.headers.get("X-Session-ID")
+                if session_id_header:
+                    try:
+                        id_sessione = int(session_id_header)
+                    except (ValueError, TypeError):
+                        id_sessione = None
+
+            
 
             # INPUT JSON
             data = await request.json()
             utente_update = UtenteUpdate(**data)
+
+            # AUTENTICAZIONE: O SESSIONE O PASSWORD ATTUALE
+            if not id_sessione:
+                # Se non c'è sessione, verifica con password attuale
+                if not utente_update.PASSWORD_ATTUALE:
+                    raise HTTPException(status_code=401, detail="Utente non autenticato")
+                
+                # Verifica password inserita
+                query = "SELECT PASSWORD_UTENTE FROM utente WHERE ID_UTENTE = %s"
+                cursor.execute(query, (ID_UTENTE,))
+                result = cursor.fetchone()
+                
+                if not result or not bcrypt.checkpw(utente_update.PASSWORD_ATTUALE.encode('utf-8'), result["PASSWORD_UTENTE"].encode('utf-8')):
+                    raise HTTPException(status_code=401, detail="Password errata")
+                
+                id_verificato = ID_UTENTE
+                is_admin = False  # Se autentica con password, non è admin per questa richiesta
+            else:
+                # VERIFICA ADMIN
+                id_verificato, is_admin = verifica_admin(id_sessione, cursor)
 
             # SE NON ADMIN E NON PROPRIO PROFILO
             if not is_admin and id_verificato != ID_UTENTE:
@@ -1171,38 +1210,37 @@ async def update_utente(ID_UTENTE: int, request: Request):
             if not is_admin and utente_update.CHECK_ADMIN is not None:
                 raise HTTPException(status_code=403, detail="Non hai i permessi per modificare il ruolo admin")
 
-            # GEOCODIFICA
+            # GEOCODIFICA (SOLO SE SI MODIFICA INDIRIZZO O COORDINATE)
             coordinate_raw = utente_update.COORDINATE_UTENTE
             indirizzo = utente_update.INDIRIZZO_UTENTE
-            try:
+            
+            # GEOCODIFICA (SOLO SE SI MODIFICA INDIRIZZO O COORDINATE)
+            if coordinate_raw or indirizzo:
+                try:
 
-                # SE SOLO COORDINATE
-                if coordinate_raw and not indirizzo:
-                    indirizzo = indirizzo_da_coordinate(normalizza_coordinate_input(coordinate_raw))
-                    risultato_verifica = verifica_coordinate_indirizzo(indirizzo, coordinate_raw)
-                    distanza = risultato_verifica["distanza_metri"]
-                    utente_update.INDIRIZZO_UTENTE = indirizzo
+                    # SE SOLO COORDINATE
+                    if coordinate_raw and not indirizzo:
+                        indirizzo = indirizzo_da_coordinate(normalizza_coordinate_input(coordinate_raw))
+                        risultato_verifica = verifica_coordinate_indirizzo(indirizzo, coordinate_raw)
+                        distanza = risultato_verifica["distanza_metri"]
+                        utente_update.INDIRIZZO_UTENTE = indirizzo
 
-                # SE SOLO INDIRIZZO
-                elif indirizzo and not coordinate_raw:
-                    # Ottengo coordinate dall'indirizzo
-                    risultato_verifica = verifica_coordinate_indirizzo(indirizzo, None)
-                    utente_update.COORDINATE_UTENTE = risultato_verifica["coordinate"]
-                    distanza = risultato_verifica["distanza_metri"]
+                    # SE SOLO INDIRIZZO
+                    elif indirizzo and not coordinate_raw:
+                        # Ottengo coordinate dall'indirizzo
+                        risultato_verifica = verifica_coordinate_indirizzo(indirizzo, None)
+                        utente_update.COORDINATE_UTENTE = risultato_verifica["coordinate"]
+                        distanza = risultato_verifica["distanza_metri"]
 
-                # SE ENTRAMBI
-                elif indirizzo and coordinate_raw:
-                    # Entrambi forniti: verifica distanza e coerenza
-                    risultato_verifica = verifica_coordinate_indirizzo(indirizzo, coordinate_raw)
-                    distanza = risultato_verifica["distanza_metri"]
+                    # SE ENTRAMBI
+                    elif indirizzo and coordinate_raw:
+                        # Entrambi forniti: verifica distanza e coerenza
+                        risultato_verifica = verifica_coordinate_indirizzo(indirizzo, coordinate_raw)
+                        distanza = risultato_verifica["distanza_metri"]
 
-                # SE NESSUN INDIRIZZO O COORDINATE
-                else:
-                    raise HTTPException(status_code=400, detail="È necessario fornire almeno COORDINATE_UTENTE o INDIRIZZO_UTENTE")
-
-            # ERRORE DI GEOCODIFICA
-            except ValueError as e:
-                raise HTTPException(status_code=400, detail=str(e))
+                # ERRORE DI GEOCODIFICA
+                except ValueError as e:
+                    raise HTTPException(status_code=400, detail=str(e))
 
             # SE COORDINATE MODIFICATE
             if utente_update.COORDINATE_UTENTE:
@@ -1408,6 +1446,15 @@ async def get_iscrizioni(request: Request):
     # VERIFICA SESSIONE
     id_sessione = request.session.get("ID_UTENTE")
 
+    # FALLBACK:
+    if not id_sessione:
+        session_id_header = request.headers.get("X-Session-ID")
+        if session_id_header:
+            try:
+                id_sessione = int(session_id_header)
+            except (ValueError, TypeError):
+                pass
+
     # INIZIO
     try:
         with connessione.cursor(dictionary=True) as cursor:
@@ -1509,20 +1556,29 @@ async def get_iscrizioni(request: Request):
 # POST /ISCRIZIONI/{ID_EVENTO}/{ID_UTENTE}
 # POST /ISCRIZIONI/{ID_EVENTO}  (ricava ID_UTENTE dalla sessione)
 # 🡹 [⚠️GESTIONE PERMESSI E PASSWORD EVENTO⚠️] 🡹
-@app.post("/ISCRIZIONI/{id_evento}")
-@app.post("/ISCRIZIONI/{id_evento}/{id_utente}")
-async def crea_iscrizione(id_evento: int, request: Request, id_utente: int = None):
+@app.post("/ISCRIZIONI/{ID_EVENTO}")
+@app.post("/ISCRIZIONI/{ID_EVENTO}/{ID_UTENTE}")
+async def crea_iscrizione(ID_EVENTO: int, request: Request, ID_UTENTE: int = None):
 
     # VERIFICA SESSIONE
     id_sessione = request.session.get("ID_UTENTE")
+
+    # FALLBACK:
+    if not id_sessione:
+        session_id_header = request.headers.get("X-Session-ID")
+        if session_id_header:
+            try:
+                id_sessione = int(session_id_header)
+            except (ValueError, TypeError):
+                pass
 
     # SE NON AUTENTICATO
     if not id_sessione:
         raise HTTPException(status_code=401, detail="Utente non autenticato")
 
     # SE ID_UTENTE NON FORNITO, USA LA SESSIONE
-    if id_utente is None:
-        id_utente = id_sessione
+    if ID_UTENTE is None:
+        ID_UTENTE = id_sessione
 
     # LEGGI DATI JSON (PASSWORD SE FORNITA)
     try:
@@ -1537,12 +1593,12 @@ async def crea_iscrizione(id_evento: int, request: Request, id_utente: int = Non
             id_verificato, is_admin = verifica_admin(id_sessione, cursor)
 
             # SE NON ADMIN O NON È IL PROPRIO PROFILO
-            if not (is_admin or id_verificato == id_utente):
+            if not (is_admin or id_verificato == ID_UTENTE):
                 raise HTTPException(status_code=403, detail="Permessi insufficienti")
 
             # VERIFICA ISCRIZIONE ESISTENTE
             query_check = "SELECT COUNT(*) as cnt FROM iscrizione WHERE ID_EVENTO=%s AND ID_UTENTE=%s"
-            cursor.execute(query_check, (id_evento, id_utente))
+            cursor.execute(query_check, (ID_EVENTO, ID_UTENTE))
             count = cursor.fetchone()['cnt']
 
             # SE ISCRIZIONE ESISTE
@@ -1550,7 +1606,7 @@ async def crea_iscrizione(id_evento: int, request: Request, id_utente: int = Non
                 raise HTTPException(status_code=409, detail="Iscrizione già esistente")
 
             # VERIFICA EVENTO E PASSWORD
-            cursor.execute("SELECT ID_EVENTO, ID_UTENTE, PASSWORD_EVENTO, MAX_PARTECIPANTI, NOME_EVENTO, DATA_EVENTO, INDIRIZZO_EVENTO, COSTO, CHECK_MAGGIORENNI FROM evento WHERE ID_EVENTO = %s", (id_evento,))
+            cursor.execute("SELECT ID_EVENTO, ID_UTENTE, PASSWORD_EVENTO, MAX_PARTECIPANTI, NOME_EVENTO, DATA_EVENTO, INDIRIZZO_EVENTO, COSTO, CHECK_MAGGIORENNI FROM evento WHERE ID_EVENTO = %s", (ID_EVENTO,))
             evento = cursor.fetchone()
             
             # SE EVENTO NON ESISTE
@@ -1576,14 +1632,14 @@ async def crea_iscrizione(id_evento: int, request: Request, id_utente: int = Non
 
             # VERIFICA LIMITE PARTECIPANTI
             if max_partecipanti and max_partecipanti > 0:
-                cursor.execute("SELECT COUNT(*) as cnt FROM iscrizione WHERE ID_EVENTO = %s", (id_evento,))
+                cursor.execute("SELECT COUNT(*) as cnt FROM iscrizione WHERE ID_EVENTO = %s", (ID_EVENTO,))
                 iscritti = cursor.fetchone()['cnt']
                 if iscritti >= max_partecipanti:
                     raise HTTPException(status_code=409, detail="Limite massimo di partecipanti raggiunto")
 
             # CREAZIONE ISCRIZIONE
             query_insert = "INSERT INTO iscrizione (ID_EVENTO, ID_UTENTE, DATA_ISCRIZIONE) VALUES (%s, %s, NOW())"
-            cursor.execute(query_insert, (id_evento, id_utente))
+            cursor.execute(query_insert, (ID_EVENTO, ID_UTENTE))
             connessione.commit()
 
             # CONVERSIONE DATETIME PER JSON
@@ -1602,7 +1658,7 @@ async def crea_iscrizione(id_evento: int, request: Request, id_utente: int = Non
                     "CHECK_MAGGIORENNI": evento_convertito.get('CHECK_MAGGIORENNI'),
                     "MAX_PARTECIPANTI": evento_convertito.get('MAX_PARTECIPANTI')
                 },
-                "ID_UTENTE": id_utente
+                "ID_UTENTE": ID_UTENTE
             })
 
     # ERRORE NELLA QUERY
@@ -1629,6 +1685,15 @@ async def elimina_iscrizione(id_evento: int, request: Request, id_utente: int = 
 
     # VERIFICA SESSIONE
     id_sessione = request.session.get("ID_UTENTE")
+
+    # FALLBACK:
+    if not id_sessione:
+        session_id_header = request.headers.get("X-Session-ID")
+        if session_id_header:
+            try:
+                id_sessione = int(session_id_header)
+            except (ValueError, TypeError):
+                pass
 
     # SE NON AUTENTICATO
     if not id_sessione:
@@ -1695,6 +1760,16 @@ async def elimina_iscrizioni(request: Request):
 
     # VERIFICA SESSIONE
     id_sessione = request.session.get("ID_UTENTE")
+    
+    # FALLBACK:
+    if not id_sessione:
+        session_id_header = request.headers.get("X-Session-ID")
+        if session_id_header:
+            try:
+                id_sessione = int(session_id_header)
+            except (ValueError, TypeError):
+                pass
+    
     if not id_sessione:
         raise HTTPException(status_code=401, detail="Utente non autenticato")
 
@@ -1788,6 +1863,7 @@ async def get_evento_selezionato(ID_EVENTO: int):
             query = """
                 SELECT 
                     evento.ID_EVENTO,
+                    evento.ID_UTENTE,
                     evento.NOME_EVENTO,
                     evento.DESCRIZIONE_EVENTO,
                     evento.DATA_EVENTO,
@@ -1829,7 +1905,8 @@ async def get_evento_selezionato(ID_EVENTO: int):
                         'PASSWORD_EVENTO': row['PASSWORD_EVENTO'],
                         'MAX_PARTECIPANTI': row['MAX_PARTECIPANTI'],
                         'COORDINATE_EVENTO': row['COORDINATE_EVENTO'],
-                        'NOME_UTENTE': row['NOME_UTENTE']
+                        'NOME_UTENTE': row['NOME_UTENTE'],
+                        'ID_UTENTE': row.get('ID_UTENTE')
                     }
                 
                 if row['CATEGORIA']:
@@ -1859,6 +1936,16 @@ async def get_evento_selezionato(ID_EVENTO: int):
 async def crea_evento(request: Request, ID_UTENTE: Optional[int] = None):
     # SESSIONE UTENTE
     id_sessione = request.session.get("ID_UTENTE")
+
+    # FALLBACK: se non c'è sessione, prova l'header X-Session-ID
+    if not id_sessione:
+        session_id_header = request.headers.get("X-Session-ID")
+        if session_id_header:
+            try:
+                id_sessione = int(session_id_header)
+            except (ValueError, TypeError):
+                pass
+
     if not id_sessione:
         raise HTTPException(status_code=401, detail="Utente non autenticato")
 
@@ -2369,6 +2456,7 @@ async def get_eventi(
     request: Request,
     ID_UTENTE: Optional[int] = None,
     ISCRITTO: Optional[bool] = None,
+    CREATO_DA_ME: Optional[bool] = None,
     MAGGIORENNI: Optional[bool] = None,
     HAS_PASSWORD: Optional[bool] = None,
     DATA: Optional[str] = None,
@@ -2380,6 +2468,27 @@ async def get_eventi(
 ):
     # VERIFICA SESSIONE
     id_sessione = request.session.get("ID_UTENTE")
+    
+    # FALLBACK:
+    if not id_sessione:
+        session_id_header = request.headers.get("X-Session-ID")
+        if session_id_header:
+            try:
+                id_sessione = int(session_id_header)
+            except (ValueError, TypeError):
+                pass
+    
+    coordinate_sessione = request.session.get("COORDINATE")
+    if not coordinate_sessione and id_sessione:
+        try:
+            with connessione.cursor(dictionary=True) as cursor_temp:
+                cursor_temp.execute("SELECT COORDINATE_UTENTE FROM utente WHERE ID_UTENTE = %s", (id_sessione,))
+                result = cursor_temp.fetchone()
+                if result and result["COORDINATE_UTENTE"] and isinstance(result["COORDINATE_UTENTE"], bytes):
+                    x, y = struct.unpack("<dd", result["COORDINATE_UTENTE"][9:])
+                    coordinate_sessione = f"{y} {x}"
+        except:
+            pass
 
     # NORMALIZZA PARAMETRI INPUT
     DATA = normalizza_input_nullo(DATA, tipo="str")
@@ -2389,6 +2498,7 @@ async def get_eventi(
     DISTANZA = normalizza_input_nullo(DISTANZA, tipo="str")
     RICERCA = normalizza_input_nullo(RICERCA, tipo="str")
     ISCRITTO = normalizza_input_nullo(ISCRITTO, tipo="bool")
+    CREATO_DA_ME = normalizza_input_nullo(CREATO_DA_ME, tipo="bool")
     MAGGIORENNI = normalizza_input_nullo(MAGGIORENNI, tipo="bool")
     HAS_PASSWORD = normalizza_input_nullo(HAS_PASSWORD, tipo="bool")
 
@@ -2412,12 +2522,19 @@ async def get_eventi(
 
             # FILTRO ISCRITTO
             if ISCRITTO is not None:
+                if not id_sessione:
+                    raise HTTPException(status_code=401, detail="Devi essere loggato per filtrare per iscrizioni")
                 if ISCRITTO:
-                    condizioni.append("evento.ID_EVENTO IN (SELECT ID_EVENTO FROM partecipazione WHERE ID_UTENTE = %s)")
-                    valori.append(ID_UTENTE)
-                else:
-                    condizioni.append("evento.ID_EVENTO NOT IN (SELECT ID_EVENTO FROM partecipazione WHERE ID_UTENTE = %s)")
-                    valori.append(ID_UTENTE)
+                    condizioni.append("evento.ID_EVENTO IN (SELECT ID_EVENTO FROM iscrizione WHERE ID_UTENTE = %s)")
+                    valori.append(id_sessione)
+
+            # FILTRO CREATO DA ME
+            if CREATO_DA_ME is not None:
+                if not id_sessione:
+                    raise HTTPException(status_code=401, detail="Devi essere loggato per filtrare per eventi creati")
+                if CREATO_DA_ME:
+                    condizioni.append("evento.ID_UTENTE = %s")
+                    valori.append(id_sessione)
 
             # FILTRO MAGGIORENNI
             if MAGGIORENNI is not None:
@@ -2502,8 +2619,6 @@ async def get_eventi(
 
             # DISTANZA
             if DISTANZA:
-                coordinate_sessione = request.session.get("COORDINATE")
-
                 # SE NON PRESENTI COORDINATE
                 if not coordinate_sessione:
                     raise HTTPException(status_code=400, detail="Coordinate non disponibili nella sessione utente")
@@ -2645,6 +2760,16 @@ async def crea_categoria(request: Request):
 
     # VERIFICA SESSIONE E PERMESSI ADMIN
     id_sessione = request.session.get("ID_UTENTE")
+    
+    # FALLBACK:
+    if not id_sessione:
+        session_id_header = request.headers.get("X-Session-ID")
+        if session_id_header:
+            try:
+                id_sessione = int(session_id_header)
+            except (ValueError, TypeError):
+                pass
+    
     if not id_sessione:
         raise HTTPException(status_code=401, detail="Utente non autenticato")
     
@@ -2696,6 +2821,16 @@ async def aggiorna_categoria(ID_CATEGORIA: int, request: Request):
     
     # VERIFICA SESSIONE E PERMESSI ADMIN
     id_sessione = request.session.get("ID_UTENTE")
+    
+    # FALLBACK:
+    if not id_sessione:
+        session_id_header = request.headers.get("X-Session-ID")
+        if session_id_header:
+            try:
+                id_sessione = int(session_id_header)
+            except (ValueError, TypeError):
+                pass
+    
     if not id_sessione:
         raise HTTPException(status_code=401, detail="Utente non autenticato")
     
@@ -2761,6 +2896,16 @@ async def elimina_categoria(ID_CATEGORIA: int, request: Request):
     
     # VERIFICA SESSIONE E PERMESSI ADMIN
     id_sessione = request.session.get("ID_UTENTE")
+    
+    # FALLBACK:
+    if not id_sessione:
+        session_id_header = request.headers.get("X-Session-ID")
+        if session_id_header:
+            try:
+                id_sessione = int(session_id_header)
+            except (ValueError, TypeError):
+                pass
+    
     if not id_sessione:
         raise HTTPException(status_code=401, detail="Utente non autenticato")
     

@@ -88,6 +88,37 @@
 	min-width: 0;
 }
 
+.distance-label {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	white-space: nowrap;
+	font-size: 0.95rem;
+}
+
+.distance-label select {
+	padding: 0.35rem 0.5rem;
+	border-radius: 10px;
+	border: 1px solid rgba(11,29,78,0.08);
+	background: rgba(255,255,255,0.95);
+	color: #071232;
+	width: auto;
+	min-width: 3.5rem;
+}
+
+.distance-inputs {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+
+.distance-inputs input[type="number"] {
+	width: 4rem;
+	padding: 0.35rem 0.5rem;
+	min-width: 0;
+}
+
 /* Global input/select styling */
 .filter-row input[type="date"],
 .filter-row input[type="number"],
@@ -270,12 +301,31 @@
 	box-shadow: 0 16px 36px rgba(11,29,78,0.12);
 }
 
+.event-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 0.5rem;
+}
+
 .event-card h3 {
 	color: #071232;
-	margin: 0 0 0.5rem 0;
+	margin: 0;
 	font-size: 1.2rem;
 	word-wrap: break-word;
 	overflow-wrap: break-word;
+	flex: 1;
+}
+
+.event-id {
+	color: #7cc4ff;
+	font-weight: 600;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	margin-left: 1rem;
+	padding: 0.25rem 0.6rem;
+	background: rgba(124, 196, 255, 0.1);
+	border-radius: 6px;
 }
 
 .event-card .description {
@@ -565,9 +615,198 @@
 	text-align: center;
 }
 
+.modal-success {
+		position: fixed;
+		top: 1rem;
+		left: 50%;
+		transform: translateX(-50%);
+		padding: 0.9rem 1.25rem;
+		background: #2e7d32; /* solid green, no transparency */
+		color: #ffffff;
+		border-radius: 8px;
+		box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+		z-index: 10000;
+		pointer-events: none; /* non-blocking */
+		min-width: 260px;
+		text-align: center;
+}
+
+/* Global notification styles (fixed at top) */
+.global-messages {
+	position: fixed;
+	top: 0.8rem;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 11000;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	pointer-events: none; /* non-blocking by default */
+}
+.global-messages .global-success,
+.global-messages .global-error {
+	min-width: 280px;
+	max-width: calc(100vw - 2rem);
+	padding: 0.8rem 1rem;
+	border-radius: 8px;
+	box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+	color: #fff;
+	font-weight: 600;
+	text-align: center;
+	pointer-events: auto; /* allow clicks if needed */
+}
+.global-messages .global-success { background: #2e7d32; }
+.global-messages .global-error { background: #c94c4c; }
+
+@media (max-width: 520px) {
+	.global-messages { top: 0.6rem; }
+	.global-messages .global-success, .global-messages .global-error { padding: 0.6rem 0.8rem; }
+}
+
+@media (max-width: 600px) {
+	.modal-success {
+		top: 0.8rem;
+		min-width: 200px;
+		padding: 0.7rem 1rem;
+	}
+}
+
 .modal-body {
 	padding: 2rem;
 }
+
+.iscrizioni-panel {
+	margin: 1rem 0 1.5rem 0;
+	border: 1px solid rgba(11,29,78,0.06);
+	padding: 0.75rem;
+	border-radius: 8px;
+	background: #fafafa;
+}
+
+.password-entry {
+	margin: 1rem 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+.password-entry input[type="password"] {
+	padding: 0.5rem 0.6rem;
+	border-radius: 8px;
+	border: 1px solid rgba(11,29,78,0.08);
+	max-width: 320px;
+}
+
+/* visually hidden helper for accessibility (keeps element in DOM for password managers) */
+.visually-hidden {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	padding: 0 !important;
+	margin: -1px !important;
+	overflow: hidden !important;
+	clip: rect(0, 0, 0, 0) !important;
+	white-space: nowrap !important;
+	border: 0 !important;
+}
+
+.iscrizioni-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-bottom: 0.6rem;
+}
+.iscrizioni-table th, .iscrizioni-table td {
+	padding: 0.5rem 0.6rem;
+	text-align: left;
+	border-bottom: 1px solid rgba(11,29,78,0.06);
+	font-size: 0.95rem;
+}
+.iscrizioni-table th {
+	font-weight: 700;
+}
+.iscrizioni-panel-actions {
+	display: flex;
+	justify-content: flex-end;
+}
+.btn-small {
+	padding: 0.35rem 0.6rem;
+	min-width: auto;
+}
+
+/* Create modal styles (reuse modal styles already present) */
+.modal-body form input[type="text"],
+.modal-body form input[type="date"],
+.modal-body form input[type="number"],
+.modal-body form input[type="password"],
+.modal-body form textarea {
+	width: 100%;
+	padding: 0.6rem;
+	border-radius: 8px;
+	border: 1px solid rgba(11,29,78,0.08);
+	box-sizing: border-box;
+}
+
+/* Two-column layout for small groups of form fields inside modals */
+.modal-body form .two-cols {
+	display: flex;
+	gap: 0.75rem;
+	align-items: flex-start;
+	margin-top: 0.75rem;
+}
+.modal-body form .two-cols .field {
+	flex: 1 1 0;
+	display: flex;
+	flex-direction: column;
+}
+.modal-body form .two-cols .field label { margin-top: 0; }
+
+@media (max-width: 600px) {
+	.modal-body form .two-cols { flex-direction: column; }
+}
+
+/* Three-column layout for date, cost and capacity */
+.modal-body form .three-cols {
+	display: flex;
+	gap: 0.75rem;
+	align-items: flex-start;
+	margin-top: 0.75rem;
+}
+.modal-body form .three-cols .field {
+	flex: 1 1 0;
+	display: flex;
+	flex-direction: column;
+}
+.modal-body form .three-cols .field label { margin-top: 0; }
+
+@media (max-width: 800px) {
+	.modal-body form .three-cols { flex-direction: column; }
+}
+
+/* Three-selects row for categories in create modal */
+.modal-body form .three-selects {
+	display: flex;
+	gap: 0.75rem;
+	align-items: flex-start;
+	margin-top: 0.6rem;
+}
+.modal-body form .three-selects .field {
+	flex: 1 1 0;
+	display: flex;
+	flex-direction: column;
+}
+.modal-body form .three-selects select {
+	width: 100%;
+	padding: 0.5rem;
+	border-radius: 8px;
+	border: 1px solid rgba(11,29,78,0.08);
+	box-sizing: border-box;
+}
+@media (max-width: 800px) {
+	.modal-body form .three-selects { flex-direction: column; }
+}
+
+.modal-body form label { display:block; margin-top:0.8rem; font-weight:600; }
+
+.modal-body form textarea { resize: vertical; }
 
 .modal-body h2 {
 	color: #071232;
@@ -584,6 +823,31 @@
 	line-height: 1.6;
 	word-wrap: break-word;
 	overflow-wrap: break-word;
+}
+
+.modal-actions {
+	display: flex;
+	gap: 1rem;
+	justify-content: flex-end;
+	flex-wrap: wrap;
+}
+
+.modal-actions .btn {
+	min-width: 120px;
+	width: auto;
+	margin-top: 0;
+}
+
+/* Force buttons inline on wider screens; keep stacking on small screens */
+@media (min-width: 601px) {
+	.modal-actions {
+		flex-wrap: nowrap;
+	}
+	.modal-actions .btn {
+		width: auto !important;
+		flex: 0 0 auto !important;
+		display: inline-block !important;
+	}
 }
 
 /* Make modal non-selectable except for the title and description */

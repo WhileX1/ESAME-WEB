@@ -166,6 +166,38 @@
 	padding: 1.25rem 1rem;
 }
 
+/* Global notification styles (fixed at top) - reused from home.scss */
+.global-messages {
+	position: fixed;
+	top: 0.8rem;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 11000;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	pointer-events: none;
+}
+.global-messages .global-success,
+.global-messages .global-error {
+	min-width: 280px;
+	max-width: calc(100vw - 2rem);
+	padding: 0.8rem 1rem;
+	border-radius: 8px;
+	box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+	color: #fff;
+	font-weight: 600;
+	text-align: center;
+	pointer-events: auto;
+}
+.global-messages .global-success { background: #2e7d32; }
+.global-messages .global-error { background: #c94c4c; }
+
+@media (max-width: 520px) {
+	.global-messages { top: 0.6rem; }
+	.global-messages .global-success, .global-messages .global-error { padding: 0.6rem 0.8rem; }
+}
+
 /* Cute touches for interactive elements */
 .nav-link, .actions button {
 	font-family: 'Quicksand', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;

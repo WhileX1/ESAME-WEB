@@ -36,25 +36,144 @@
 			</select>
 		</label>
 
+		<label>Maggiorenni
+			<select [(ngModel)]="maggiorenni" (change)="applyFilters()">
+				<option value="">--</option>
+				<option value="true">Sì</option>
+				<option value="false">No</option>
+			</select>
+		</label>
+
+		<label>Password
+			<select [(ngModel)]="hasPassword" (change)="applyFilters()">
+				<option value="">--</option>
+				<option value="true">Sì</option>
+				<option value="false">No</option>
+			</select>
+		</label>
+
+		<!-- Filtri per utente loggato -->
+		<ng-container *ngIf="currentUser">
+			<label class="distance-label">Distanza
+				<select [(ngModel)]="distanzaOp" (change)="onDistanzaOpChange()">
+					<option value="">--</option>
+					<option value="<">&lt;</option>
+					<option value=">">&gt;</option>
+					<option value="=">=</option>
+					<option value="range">Range</option>
+				</select>
+			</label>
+
+			<div class="distance-inputs">
+				<input type="number" placeholder="km" [(ngModel)]="distanzaVal" autocomplete="off" (input)="applyFilters()" />
+				<input type="number" placeholder="km" [(ngModel)]="distanzaValMax" autocomplete="off" (input)="applyFilters()" [disabled]="distanzaOp !== 'range'" />
+			</div>
+
+			<label class="checkbox">
+				<input type="checkbox" [(ngModel)]="iscritto" (change)="applyFilters()" />
+				Mie iscrizioni
+			</label>
+
+			<label class="checkbox">
+				<input type="checkbox" [(ngModel)]="creatoDaMe" (change)="applyFilters()" />
+				Miei eventi
+			</label>
+		</ng-container>
+
 		<label class="search">
 			<input type="search" placeholder="Cerca nome..." [(ngModel)]="ricerca" autocomplete="off" (input)="applyFilters()" />
 		</label>
 
-		<label class="checkbox">
-			<input type="checkbox" [(ngModel)]="maggiorenni" (change)="applyFilters()" />
-			Maggiorenni
-		</label>
-
-		<label class="checkbox">
-			<input type="checkbox" [(ngModel)]="hasPassword" (change)="applyFilters()" />
-			Password
-		</label>
-
 		<div class="actions">
-			<button type="button" (click)="resetFilters()">Reset</button>
+				<button type="button" (click)="resetFilters()">Reset</button>
+				<button *ngIf="currentUser" type="button" class="btn btn-primary" (click)="openCreateModal()">Crea evento</button>
 		</div>
 	</div>
 </div>
+
+<!-- CREATE EVENT MODAL (top-level so it can open without event detail modal) -->
+<div *ngIf="showCreateModal" class="modal-overlay" (click)="closeCreateModal()">
+	<div class="modal-content" (click)="$event.stopPropagation()">
+		<button class="modal-close" (click)="closeCreateModal()" title="Chiudi">✕</button>
+		<div class="modal-scroll">
+			<div class="modal-body">
+				<h2>Crea nuovo evento</h2>
+				<form (submit)="createEvento(); $event.preventDefault()">
+					<label>Nome evento *</label>
+					<input type="text" [(ngModel)]="newNomeEvento" name="newNomeEvento" required />
+
+					<label>Descrizione *</label>
+					<textarea [(ngModel)]="newDescrizioneEvento" name="newDescrizioneEvento" rows="4" required></textarea>
+
+						<label>Indirizzo</label>
+					<input type="text" [(ngModel)]="newIndirizzoEvento" name="newIndirizzoEvento" />
+
+						<label>Coordinate (lat lon)</label>
+						<input type="text" autocomplete="off" [(ngModel)]="newCoordinateEvento" name="newCoordinateEvento" />
+
+						<!-- Tre dropdown per categorie sulla stessa riga -->
+						<div class="three-selects">
+							<div class="field">
+								<label>Categoria 1</label>
+								<select [(ngModel)]="newCategoria1" name="newCategoria1">
+									<option value="" disabled>Seleziona</option>
+									@for (c of categories; track c.value) {
+										<option *ngIf="c.value" [value]="c.value">{{c.label}}</option>
+									}
+								</select>
+							</div>
+							<div class="field">
+								<label>Categoria 2</label>
+								<select [(ngModel)]="newCategoria2" name="newCategoria2">
+									<option value="" disabled>Seleziona</option>
+									@for (c of categories; track c.value) {
+										<option *ngIf="c.value" [value]="c.value">{{c.label}}</option>
+									}
+								</select>
+							</div>
+							<div class="field">
+								<label>Categoria 3</label>
+								<select [(ngModel)]="newCategoria3" name="newCategoria3">
+									<option value="" disabled>Seleziona</option>
+									@for (c of categories; track c.value) {
+										<option *ngIf="c.value" [value]="c.value">{{c.label}}</option>
+									}
+								</select>
+							</div>
+						</div>
+
+									<div class="three-cols">
+										<div class="field">
+											<label>Data evento *</label>
+											<input type="date" [(ngModel)]="newDataEvento" name="newDataEvento" required />
+										</div>
+										<div class="field">
+											<label>Costo (€)</label>
+											<input type="number" [(ngModel)]="newCostoEvento" name="newCostoEvento" />
+										</div>
+										<div class="field">
+											<label>Max partecipanti</label>
+											<input type="number" [(ngModel)]="newMaxPartecipanti" name="newMaxPartecipanti" />
+										</div>
+									</div>
+
+					<label><input type="checkbox" [(ngModel)]="newCheckMaggiorenni" name="newCheckMaggiorenni" /> Solo maggiorenni</label>
+
+						<label>Password evento</label>
+						<input type="password" autocomplete="new-password" [(ngModel)]="newPasswordEvento" name="newPasswordEvento" />
+
+					<div style="margin-top:1rem; display:flex; gap:0.5rem; justify-content:flex-end;">
+						<button type="button" class="btn btn-secondary" (click)="closeCreateModal()">Annulla</button>
+						<button type="submit" class="btn btn-primary" [disabled]="createLoading">{{ createLoading ? 'Creazione...' : 'Crea evento' }}</button>
+					</div>
+        
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+
 
 <div class="home-content">
 	<!-- LOADING INDICATOR -->
@@ -63,26 +182,27 @@
 	</div>
 
 	<!-- ERROR MESSAGE -->
-	<div *ngIf="error && !loading" class="error">
-		<p>{{ error }}</p>
-	</div>
+	<!-- Inline page errors moved to global notifications -->
 
 	<!-- EVENTS LIST -->
 	<div *ngIf="!loading && eventi.length > 0" class="events-list">
 		<h2>Risultati: {{ eventi.length }} eventi trovati</h2>
 		<div class="event-card" *ngFor="let evento of eventi" (click)="openEventModal(evento.ID_EVENTO)">
-			<h3>{{ evento.NOME_EVENTO }}</h3>
+			<div class="event-header">
+				<h3>{{ evento.NOME_EVENTO }}</h3>
+				<span class="event-id">#{{ evento.ID_EVENTO }}</span>
+			</div>
 			<p class="description">{{ evento.DESCRIZIONE_EVENTO }}</p>
 			<div class="event-details">
-				<span class="date">📅 {{ evento.DATA_EVENTO }}</span>
-				<span class="location">📍 {{ evento.INDIRIZZO_EVENTO }}</span>
-				<span class="price" *ngIf="evento.COSTO">💵 {{ evento.COSTO }}€</span>
+				<span class="date">{{ evento.DATA_EVENTO }}</span>
+				<span class="location">{{ evento.INDIRIZZO_EVENTO }}</span>
+				<span class="price" *ngIf="evento.COSTO">{{ evento.COSTO }}€</span>
 				@for (cat of evento.CATEGORIE; track cat) {
-					<span class="category">🏷️ {{ cat }}</span>
+					<span class="category">{{ cat }}</span>
 				}
-				<span class="age-restriction" *ngIf="evento.CHECK_MAGGIORENNI">🔞 Maggiorenni</span>
-				<span class="capacity" *ngIf="evento.MAX_PARTECIPANTI">👥 Max: {{ evento.MAX_PARTECIPANTI }}</span>
-				<span class="password" *ngIf="evento.PASSWORD_EVENTO">🔐 Password</span>
+				<span class="age-restriction" *ngIf="evento.CHECK_MAGGIORENNI">Maggiorenni</span>
+				<span class="capacity" *ngIf="evento.MAX_PARTECIPANTI">Max: {{ evento.MAX_PARTECIPANTI }}</span>
+				<span class="password" *ngIf="evento.PASSWORD_EVENTO">Password</span>
 			</div>
 		</div>
 	</div>
@@ -109,10 +229,7 @@
 			<div *ngIf="modalLoading" class="modal-loading">
 				<p>Caricamento dettagli...</p>
 			</div>
-
-			<div *ngIf="modalError && !modalLoading" class="modal-error">
-				<p>{{ modalError }}</p>
-			</div>
+            
 
 			<div *ngIf="selectedEventDetail && !modalLoading" class="modal-body">
 				<h2>{{ selectedEventDetail.NOME_EVENTO }}</h2>
@@ -120,37 +237,37 @@
 
 				<div class="modal-details">
 					<div class="detail-row" *ngIf="selectedEventDetail.DATA_EVENTO">
-						<span class="label">📅 Data:</span>
+						<span class="label">Data:</span>
 						<span class="value">{{ selectedEventDetail.DATA_EVENTO }}</span>
 					</div>
 
 					<div class="detail-row" *ngIf="selectedEventDetail.INDIRIZZO_EVENTO">
-						<span class="label">📍 Indirizzo:</span>
+						<span class="label">Indirizzo:</span>
 						<span class="value">{{ selectedEventDetail.INDIRIZZO_EVENTO }}</span>
 					</div>
 
 					<div class="detail-row" *ngIf="selectedEventDetail.COSTO">
-						<span class="label">💵 Costo:</span>
+						<span class="label">Costo:</span>
 						<span class="value">{{ selectedEventDetail.COSTO }}€</span>
 					</div>
 
 					<div class="detail-row" *ngIf="selectedEventDetail.MAX_PARTECIPANTI">
-						<span class="label">👥 Max Partecipanti:</span>
+						<span class="label">Max Partecipanti:</span>
 						<span class="value">{{ selectedEventDetail.MAX_PARTECIPANTI }}</span>
 					</div>
 
 					<div class="detail-row" *ngIf="selectedEventDetail.CHECK_MAGGIORENNI">
-						<span class="label">🔞 Maggiorenni:</span>
+						<span class="label">Maggiorenni:</span>
 						<span class="value">Sì</span>
 					</div>
 
 					<div class="detail-row" *ngIf="selectedEventDetail.PASSWORD_EVENTO">
-						<span class="label">🔐 Password:</span>
+						<span class="label">Password:</span>
 						<span class="value">Sì (Protetto)</span>
 					</div>
 
 					<div class="detail-row" *ngIf="selectedEventDetail.CATEGORIE && selectedEventDetail.CATEGORIE.length > 0">
-						<span class="label">🏷️ Categorie:</span>
+						<span class="label">Categorie:</span>
 						<div class="categories-list">
 							@for (cat of selectedEventDetail.CATEGORIE; track cat) {
 								<span class="category-badge">{{ cat }}</span>
@@ -159,7 +276,72 @@
 					</div>
 				</div>
 
-				<button class="btn btn-primary" (click)="closeEventModal()">Chiudi</button>
+					<!-- Password input for protected events (inside form to satisfy browser password UX) -->
+					<form *ngIf="selectedEventDetail.PASSWORD_EVENTO && !userIscritto" class="password-entry" (submit)="iscrivitiAlEvento(); $event.preventDefault()">
+						<!-- Hidden username field for password managers / accessibility -->
+						<input type="text" name="event_username" autocomplete="username" class="visually-hidden" tabindex="-1" aria-hidden="true" />
+						<label for="eventPassword">Inserisci password per iscrizione</label>
+						<input id="eventPassword" name="eventPassword" type="password" autocomplete="current-password" [(ngModel)]="eventPassword" placeholder="Password evento" />
+					</form>
+
+					<div *ngIf="modalSuccess && !modalLoading" class="modal-success">
+						<p>{{ modalSuccess }}</p>
+					</div>
+
+
+				<div class="modal-actions">
+					<!-- Iscrizioni: visibile solo al creatore dell'evento o ad admin -->
+					<button *ngIf="currentUser && selectedEventDetail && (currentUser.CHECK_ADMIN || currentUser.ID_UTENTE === selectedEventDetail.ID_UTENTE)" class="btn btn-secondary" (click)="openIscrizioni()">
+						Iscrizioni
+					</button>
+						<!-- If not logged in, prompt to login; otherwise show subscribe button -->
+						<button *ngIf="!currentUser" class="btn btn-primary" (click)="navigateToLogin()">Accedi per iscriverti</button>
+						<button 
+							*ngIf="currentUser && !userIscritto"
+							class="btn btn-primary" 
+							(click)="iscrivitiAlEvento()"
+							[disabled]="iscrittiBtnLoading"
+						>
+							{{ iscrittiBtnLoading ? 'Iscrizione...' : 'Iscriviti' }}
+						</button>
+					<button 
+						*ngIf="userIscritto"
+						class="btn btn-secondary" 
+						(click)="disiscriviDalEvento()"
+						[disabled]="iscrittiBtnLoading"
+					>
+						{{ iscrittiBtnLoading ? 'Disiscrizione...' : 'Disiscriviti' }}
+					</button>
+					<button class="btn btn-secondary" (click)="closeEventModal()">Chiudi</button>
+				</div>
+
+					<!-- Iscrizioni panel (appear below buttons) -->
+					<div *ngIf="showIscrizioniList" class="iscrizioni-panel">
+						<div *ngIf="iscrizioniLoading">Caricamento iscrizioni...</div>
+						<div *ngIf="iscrizioniError" class="modal-error"><p>{{ iscrizioniError }}</p></div>
+						<table *ngIf="!iscrizioniLoading && iscrizioniList.length > 0" class="iscrizioni-table">
+							<thead>
+								<tr>
+									<th>ID Utente</th>
+									<th>Nome Utente</th>
+									<th>Data Iscrizione</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr *ngFor="let iscr of iscrizioniList">
+									<td>{{ iscr.ID_UTENTE }}</td>
+									<td>{{ iscr.NOME_UTENTE || iscr.EMAIL_UTENTE }}</td>
+									<td>{{ iscr.DATA_ISCRIZIONE }}</td>
+									<td><button class="btn btn-danger btn-small" (click)="eliminaIscrizione(iscr.ID_UTENTE)">Elimina</button></td>
+								</tr>
+							</tbody>
+						</table>
+						<div *ngIf="!iscrizioniLoading && iscrizioniList.length === 0">Nessuna iscrizione.</div>
+						<div class="iscrizioni-panel-actions">
+							<button class="btn btn-secondary" (click)="closeIscrizioni()">Chiudi lista</button>
+						</div>
+					</div>
 			</div>
 		</div>
 	</div>

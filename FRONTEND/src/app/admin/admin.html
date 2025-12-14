@@ -1,0 +1,340 @@
+<div class="admin-container">
+	<!-- Tabs Navigation -->
+	<div class="tabs-navigation">
+		<button 
+			[class.active]="activeTab === 'categorie'"
+			(click)="activeTab = 'categorie'"
+			class="tab-btn">
+			Categorie
+		</button>
+		<button 
+			[class.active]="activeTab === 'utenti'"
+			(click)="activeTab = 'utenti'"
+			class="tab-btn">
+			Utenti
+		</button>
+		<button 
+			[class.active]="activeTab === 'iscrizioni'"
+			(click)="activeTab = 'iscrizioni'"
+			class="tab-btn">
+			Iscrizioni
+		</button>
+	</div>
+
+	<!-- ===== CATEGORIE ===== -->
+	<div *ngIf="activeTab === 'categorie'" class="admin-section">
+		<h2>Gestione Categorie</h2>
+
+		<!-- Messages are shown via global NotificationService -->
+
+		<!-- Form Crea Categoria -->
+		<div class="admin-form">
+			<div class="form-group">
+				<input 
+					type="text" 
+					placeholder="Nome categoria"
+					[(ngModel)]="nuovaCategoria"
+					(keyup.enter)="creaCategoria()"
+					autocomplete="off"
+				/>
+				<button 
+					type="button" 
+					(click)="creaCategoria()"
+					[disabled]="loadingCategorie"
+					class="btn-primary"
+				>
+					{{ loadingCategorie ? 'Creazione...' : 'Crea' }}
+				</button>
+			</div>
+		</div>
+
+		<!-- Lista Categorie -->
+		<div *ngIf="!loadingCategorie && categorie.length > 0" class="lista-container">
+			<h3>Categorie Esistenti ({{ categorie.length }})</h3>
+			<table>
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Nome</th>
+						<th>Azioni</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let cat of categorie">
+						<td>{{ cat.ID_CATEGORIA }}</td>
+						<td>{{ cat.NOME_CATEGORIA }}</td>
+						<td>
+							<button 
+								type="button" 
+								(click)="openEditCategoria(cat)"
+								class="btn-edit-small">
+								Modifica
+							</button>
+							<button 
+								type="button" 
+								(click)="eliminaCategoria(cat.ID_CATEGORIA, cat.NOME_CATEGORIA)"
+								class="btn-delete-small">
+								Elimina
+							</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div *ngIf="!loadingCategorie && categorie.length === 0" class="no-data">
+			<p>Nessuna categoria trovata</p>
+		</div>
+
+		<div *ngIf="loadingCategorie" class="loading">
+			<p>Caricamento categorie...</p>
+		</div>
+	</div>
+
+	<!-- ===== UTENTI ===== -->
+	<div *ngIf="activeTab === 'utenti'" class="admin-section">
+		<h2>Gestione Utenti</h2>
+
+		<!-- Messages are shown via global NotificationService -->
+
+		<!-- Filtri -->
+		<div class="admin-form">
+			<div class="form-group">
+				<input 
+					type="text" 
+					placeholder="Cerca" 
+					[(ngModel)]="ricercaUtenti"
+					autocomplete="off"
+				/>
+				<select [(ngModel)]="filtroAdminUtenti">
+					<option value="">-- Tutti --</option>
+					<option value="0">Non Admin</option>
+					<option value="1">Admin</option>
+				</select>
+				<button 
+					type="button" 
+					(click)="applicaFiltriUtenti()"
+					class="btn-primary">
+					Filtra
+				</button>
+				<button 
+					type="button" 
+					(click)="resetFiltriUtenti()"
+					class="btn-secondary">
+					Reset
+				</button>
+			</div>
+		</div>
+
+		<!-- Lista Utenti -->
+		<div *ngIf="!loadingUtenti && utenti.length > 0" class="lista-container">
+			<h3>Utenti ({{ utenti.length }})</h3>
+			<table>
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Nome</th>
+						<th>Email</th>
+						<th>Admin</th>
+		                <th>Indirizzo</th>
+						<th>Azioni</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let user of utenti">
+						<td>{{ user.ID_UTENTE }}</td>
+						<td>{{ user.NOME_UTENTE }}</td>
+						<td>{{ user.EMAIL_UTENTE }}</td>
+						<td>{{ user.CHECK_ADMIN ? 'Sì' : 'No' }}</td>
+		                <td>{{ user.INDIRIZZO_UTENTE }}</td>
+						<td>
+							<button 
+								type="button" 
+								(click)="openEditUtente(user)"
+								class="btn-edit-small">
+								Modifica
+							</button>
+							<button 
+								type="button" 
+								(click)="eliminaUtente(user.ID_UTENTE, user.NOME_UTENTE)"
+								class="btn-delete-small">
+								Elimina
+							</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div *ngIf="!loadingUtenti && utenti.length === 0" class="no-data">
+			<p>Nessun utente trovato</p>
+		</div>
+
+		<div *ngIf="loadingUtenti" class="loading">
+			<p>Caricamento utenti...</p>
+		</div>
+	</div>
+
+	<!-- ===== ISCRIZIONI ===== -->
+	<div *ngIf="activeTab === 'iscrizioni'" class="admin-section">
+		<h2>Gestione Iscrizioni</h2>
+
+		<!-- Messages are shown via global NotificationService -->
+
+		<!-- Form Crea Iscrizione -->
+		<div class="admin-form">
+			<div class="form-group">
+				<input 
+					type="number" 
+					placeholder="ID Evento" 
+					[(ngModel)]="nuovaIscrizioneIdEvento"
+					autocomplete="off"
+				/>
+				<input 
+					type="number" 
+					placeholder="ID Utente" 
+					[(ngModel)]="nuovaIscrizioneIdUtente"
+					autocomplete="off"
+				/>
+				<button 
+					type="button" 
+					(click)="creaIscrizione()"
+					[disabled]="loadingIscrizioni"
+					class="btn-primary"
+				>
+					{{ loadingIscrizioni ? 'Creazione...' : 'Crea' }}
+				</button>
+			</div>
+		</div>
+
+		<!-- Filtri -->
+		<div class="admin-form">
+			<div class="form-group">
+				<input 
+					type="number" 
+					placeholder="Filtra per ID Evento" 
+					[(ngModel)]="filtroIdEvento"
+					autocomplete="off"
+				/>
+				<input 
+					type="number" 
+					placeholder="Filtra per ID Utente" 
+					[(ngModel)]="filtroIdUtente"
+					autocomplete="off"
+				/>
+				<button 
+					type="button" 
+					(click)="applicaFiltriIscrizioni()"
+					class="btn-primary">
+					Filtra
+				</button>
+				<button 
+					type="button" 
+					(click)="resetFiltriIscrizioni()"
+					class="btn-secondary">
+					Reset
+				</button>
+			</div>
+		</div>
+
+		<!-- Lista Iscrizioni -->
+		<div *ngIf="!loadingIscrizioni && iscrizioni.length > 0" class="lista-container">
+			<h3>Iscrizioni ({{ iscrizioni.length }})</h3>
+			<table>
+				<thead>
+					<tr>
+						<th>ID Evento</th>
+						<th>ID Utente</th>
+						<th>Data Iscrizione</th>
+						<th>Azioni</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let iscr of iscrizioni">
+						<td>{{ iscr.ID_EVENTO }}</td>
+						<td>{{ iscr.ID_UTENTE }}</td>
+						<td>{{ iscr.DATA_ISCRIZIONE }}</td>
+						<td>
+							<button 
+								type="button" 
+								(click)="eliminaIscrizione(iscr.ID_EVENTO, iscr.ID_UTENTE)"
+								class="btn-delete-small">
+								Elimina
+							</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div *ngIf="!loadingIscrizioni && iscrizioni.length === 0" class="no-data">
+			<p>Nessuna iscrizione trovata</p>
+		</div>
+
+		<div *ngIf="loadingIscrizioni" class="loading">
+			<p>Caricamento iscrizioni...</p>
+		</div>
+	</div>
+</div>
+
+<!-- Modal Edit Categoria -->
+<div *ngIf="modalCategoriaEdit" class="modal-overlay" (click)="closeModalCategoria()">
+	<div class="modal-content" (click)="$event.stopPropagation()">
+		<button class="modal-close" (click)="closeModalCategoria()">✕</button>
+		<h3>Modifica Categoria</h3>
+		<div class="modal-body">
+			<input 
+				type="text" 
+				placeholder="Nome categoria" 
+				[(ngModel)]="categoriaEditNome"
+				(keyup.enter)="saveCategoria()"
+			/>
+		</div>
+		<div class="modal-actions">
+			<button type="button" (click)="saveCategoria()" class="btn-primary">Salva</button>
+			<button type="button" (click)="closeModalCategoria()" class="btn-secondary">Annulla</button>
+		</div>
+	</div>
+</div>
+
+<!-- Modal Edit Utente -->
+<div *ngIf="modalUtenteEdit" class="modal-overlay" (click)="closeModalUtente()">
+	<div class="modal-content" (click)="$event.stopPropagation()">
+		<button class="modal-close" (click)="closeModalUtente()">✕</button>
+		<h3>Modifica Utente</h3>
+		<div class="modal-body">
+			<div class="form-group">
+				<label>Email</label>
+				<div class="readonly-field">{{ modalUtenteEdit.EMAIL_UTENTE || '—' }}</div>
+			</div>
+			<div class="form-group">
+				<label>Nome</label>
+				<input 
+					type="text" 
+					placeholder="Nome utente" 
+					[(ngModel)]="modalUtenteEdit.NOME_UTENTE"
+				/>
+			</div>
+            <div class="form-group">
+                <label>Indirizzo</label>
+                <input 
+                    type="text" 
+                    placeholder="Indirizzo utente" 
+                    [(ngModel)]="modalUtenteEdit.INDIRIZZO_UTENTE"
+                />
+            </div>
+			<div class="form-group">
+				<label>Admin</label>
+				<select [(ngModel)]="modalUtenteEdit.CHECK_ADMIN">
+					<option [value]="false">No</option>
+					<option [value]="true">Sì</option>
+				</select>
+			</div>
+		</div>
+		<div class="modal-actions">
+			<button type="button" (click)="saveUtente()" class="btn-primary">Salva</button>
+			<button type="button" (click)="closeModalUtente()" class="btn-secondary">Annulla</button>
+		</div>
+	</div>
+</div>
+

@@ -1,30 +1,139 @@
 <div class="profile-container">
+  <!-- Messages are shown globally via the app-level notification bar -->
+
   <div *ngIf="user" class="profile-card">
     <div class="profile-header">
       <h1>{{ user.NOME_UTENTE }}</h1>
-      <p *ngIf="user.CHECK_ADMIN" class="admin-badge">👨‍💼 Amministratore</p>
+      <p *ngIf="user.CHECK_ADMIN" class="admin-badge">Amministratore</p>
     </div>
 
-    <div class="profile-details">
+    <!-- Modalità Visualizzazione -->
+    <div *ngIf="!isEditing" class="profile-details">
       <div class="detail-row">
-        <span class="label">📧 Email:</span>
+        <span class="label">Email:</span>
         <span class="value">{{ user.EMAIL_UTENTE }}</span>
       </div>
 
       <div class="detail-row">
-        <span class="label">📍 Indirizzo:</span>
+        <span class="label">Indirizzo:</span>
         <span class="value">{{ user.INDIRIZZO_UTENTE || '—' }}</span>
       </div>
 
       <div class="detail-row">
-        <span class="label">📅 Iscritto dal:</span>
+        <span class="label">Iscritto dal:</span>
         <span class="value">{{ user.DATA_REGISTRAZIONE | date: 'dd/MM/yyyy' }}</span>
       </div>
     </div>
 
+    <!-- Modalità Edit -->
+    <form *ngIf="isEditing" class="profile-edit-form">
+      <div class="form-column">
+        <div class="form-group">
+          <label for="editName">Nome</label>
+          <input
+            id="editName"
+            type="text"
+            [(ngModel)]="editData.NOME_UTENTE"
+            name="NOME_UTENTE"
+            placeholder="Inserisci il tuo nome"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="editEmail">Email</label>
+          <input
+            id="editEmail"
+            type="email"
+            [(ngModel)]="editData.EMAIL_UTENTE"
+            name="EMAIL_UTENTE"
+            placeholder="Inserisci la tua email"
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="editAddress">Indirizzo</label>
+          <input
+            id="editAddress"
+            type="text"
+            [(ngModel)]="editData.INDIRIZZO_UTENTE"
+            name="INDIRIZZO_UTENTE"
+            placeholder="Es: Via Roma 1, Milano"
+          />
+        </div>
+      </div>
+
+      <div class="form-column">
+        <div class="form-group">
+          <label for="editCurrentPassword">Password Attuale *</label>
+          <input
+            id="editCurrentPassword"
+            type="password"
+            [(ngModel)]="editData.PASSWORD_ATTUALE"
+            name="PASSWORD_ATTUALE"
+            placeholder="Richiesto per cambiare password"
+            autocomplete="current-password"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="editNewPassword">Nuova Password</label>
+          <input
+            id="editNewPassword"
+            type="password"
+            [(ngModel)]="editData.PASSWORD_NUOVA"
+            name="PASSWORD_NUOVA"
+            placeholder="Almeno 6 caratteri"
+            autocomplete="new-password"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="editConfirmPassword">Conferma Password</label>
+          <input
+            id="editConfirmPassword"
+            type="password"
+            [(ngModel)]="editData.PASSWORD_NUOVA_CONFERMA"
+            name="PASSWORD_NUOVA_CONFERMA"
+            placeholder="Ripeti la nuova password"
+            autocomplete="new-password"
+          />
+        </div>
+      </div>
+    </form>
+
     <div class="profile-actions">
-      <button class="btn btn-logout" (click)="logout()" [disabled]="loading" title="Esci dall'account">
-        {{ loading ? '⏳ Logout in corso...' : '🚪 Logout' }}
+      <button 
+        *ngIf="!isEditing"
+        class="btn btn-edit" 
+        (click)="toggleEdit()" 
+        title="Modifica il tuo profilo">
+        Modifica
+      </button>
+
+      <div *ngIf="isEditing" class="edit-buttons">
+        <button 
+          class="btn btn-save" 
+          (click)="saveProfile()" 
+          [disabled]="loading" 
+          title="Salva le modifiche">
+          Salva
+        </button>
+        <button 
+          class="btn btn-cancel" 
+          (click)="toggleEdit()" 
+          [disabled]="loading" 
+          title="Annulla modifiche">
+          Annulla
+        </button>
+      </div>
+
+      <button 
+        class="btn btn-logout" 
+        (click)="logout()" 
+        [disabled]="loading" 
+        title="Esci dall'account">
+        Logout
       </button>
     </div>
   </div>

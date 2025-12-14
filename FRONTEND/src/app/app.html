@@ -10,6 +10,12 @@
 					routerLinkActive="active" 
 					class="nav-link" 
 					role="menuitem">{{ s.label }}</a>
+				<a *ngIf="currentUser?.CHECK_ADMIN" 
+					routerLink="/admin" 
+					(click)="closeMenu()"
+					routerLinkActive="active" 
+					class="nav-link admin-link" 
+					role="menuitem">Admin</a>
 			</div>
 		</nav>
 		<!-- HAMBURGER MENU BUTTON -->
@@ -28,8 +34,23 @@
 			routerLinkActive="active" 
 			class="mobile-menu-link" 
 			role="menuitem">{{ s.label }}</a>
+		<a *ngIf="currentUser?.CHECK_ADMIN" 
+			routerLink="/admin" 
+			(click)="closeMenu()"
+			routerLinkActive="active" 
+			class="mobile-menu-link admin-link" 
+			role="menuitem">Admin</a>
 	</nav>
 </header>
+
+<!-- Global notifications (root-level) -->
+<div class="global-messages">
+	<ng-container *ngIf="message$ | async as msg">
+		<div [ngClass]="msg.type === 'success' ? 'global-success' : 'global-error'">
+			<p>{{ msg.text }}</p>
+		</div>
+	</ng-container>
+</div>
 
 <!-- SOTTOPAGINA -->
 <main class="app-main">

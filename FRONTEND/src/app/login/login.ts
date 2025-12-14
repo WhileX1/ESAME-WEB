@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { notifier } from '../app';
 
 interface User {
   ID_UTENTE: number;
@@ -40,9 +41,8 @@ export class Login implements OnInit {
   
   // UI state
   loading = false;
-  message: { type: 'success' | 'error', text: string } | null = null;
   
-  apiUrl = 'https://127.0.0.1:8000';
+  apiUrl = 'http://127.0.0.1:8000';
 
   constructor(private http: HttpClient, private router: Router) {}
 
@@ -62,7 +62,7 @@ export class Login implements OnInit {
    */
   async login() {
     if (!this.loginEmail || !this.loginPassword) {
-      this.showMessage('error', 'Inserisci email e password');
+      notifier.error('Inserisci email e password');
       return;
     }
 
@@ -74,10 +74,12 @@ export class Login implements OnInit {
 
     this.http.post<any>(`${this.apiUrl}/LOGIN`, loginData, { withCredentials: true }).subscribe({
       next: (response) => {
-        this.showMessage('success', response.message);
+        notifier.success(response.message);
+        this.loading = false;
         
-        // Salva i dati utente in sessionStorage
+        // Salva i dati utente in sessionStorage E localStorage
         sessionStorage.setItem('user', JSON.stringify(response.utente));
+        localStorage.setItem('user', JSON.stringify(response.utente));
         
         // Reindirizza al profilo dopo 1 secondo
         setTimeout(() => {
@@ -91,7 +93,7 @@ export class Login implements OnInit {
         } else if (err.error?.message) {
           errorMsg = err.error.message;
         }
-        this.showMessage('error', errorMsg);
+        notifier.error(errorMsg);
         this.loading = false;
       }
     });
@@ -103,22 +105,22 @@ export class Login implements OnInit {
   async register() {
     // Validazione form
     if (!this.registerEmail || !this.registerPassword || !this.registerConfirmPassword || !this.registerName) {
-      this.showMessage('error', 'Completa tutti i campi obbligatori');
+      notifier.error('Completa tutti i campi obbligatori');
       return;
     }
 
     if (this.registerPassword !== this.registerConfirmPassword) {
-      this.showMessage('error', 'Le password non corrispondono');
+      notifier.error('Le password non corrispondono');
       return;
     }
 
     if (this.registerPassword.length < 6) {
-      this.showMessage('error', 'La password deve avere almeno 6 caratteri');
+      notifier.error('La password deve avere almeno 6 caratteri');
       return;
     }
 
     if (!this.registerAddress) {
-      this.showMessage('error', 'Inserisci un indirizzo');
+      notifier.error('Inserisci un indirizzo');
       return;
     }
 
@@ -135,7 +137,7 @@ export class Login implements OnInit {
     // Se admin, aggiungi password admin
     if (this.registerIsAdmin) {
       if (!this.registerAdminPassword) {
-        this.showMessage('error', 'Inserisci la password amministratore');
+        notifier.error('Inserisci la password amministratore');
         this.loading = false;
         return;
       }
@@ -144,7 +146,7 @@ export class Login implements OnInit {
 
     this.http.post<any>(`${this.apiUrl}/UTENTI`, registerData, { withCredentials: true }).subscribe({
       next: (response) => {
-        this.showMessage('success', response.message);
+        notifier.success(response.message);
         
         // Auto-login dopo registrazione
         setTimeout(() => {
@@ -159,7 +161,7 @@ export class Login implements OnInit {
         if (err.error?.message) {
           errorMsg = err.error.message;
         }
-        this.showMessage('error', errorMsg);
+        notifier.error(errorMsg);
         this.loading = false;
       }
     });
@@ -168,15 +170,11 @@ export class Login implements OnInit {
   /**
    * Mostra messaggio
    */
-  private showMessage(type: 'success' | 'error', text: string) {
-    this.message = { type, text };
-  }
-
   /**
-   * Cancella messaggi
+   * Cancella messaggi globali
    */
   private clearMessages() {
-    this.message = null;
+    notifier.clear();
   }
 
   /**
